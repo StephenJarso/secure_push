@@ -186,6 +186,7 @@ v2
  - AST-based code analysis
  - Smarter AI-specific detectors
  - Performance improvements
+ 
 v3
  - Auto-fix mode for common issues
  - VS Code extension
