@@ -1,0 +1,35 @@
+#!/bin/bash
+# Secure Push pre-commit hook
+# This script runs secure-push on staged files before allowing a commit
+
+set -e
+
+echo "🔍 Running Secure Push pre-commit check..."
+
+# Get list of staged files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(go|js|ts|py|rb|java|env|yaml|yml|json)$' || true)
+
+if [ -z "$STAGED_FILES" ]; then
+    echo "✅ No relevant files to scan"
+    exit 0
+fi
+
+# Create a temporary directory with staged files
+TEMP_DIR=$(mktemp -d)
+trap "rm -rf $TEMP_DIR" EXIT
+
+# Copy staged files to temp directory preserving structure
+for file in $STAGED_FILES; do
+    mkdir -p "$TEMP_DIR/$(dirname "$file")"
+    git show ":$file" > "$TEMP_DIR/$file"
+done
+
+# Run secure-push on the temp directory
+if command -v secure-push &> /dev/null; then
+    secure-push scan "$TEMP_DIR"
+else
+    # Fallback: run from source
+    go run ./cmd/secure-push --path "$TEMP_DIR"
+fi
+
+echo "✅ Pre-commit check passed"
