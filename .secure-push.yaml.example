@@ -1,0 +1,35 @@
+# Secure Push Configuration Example
+# Copy this file to .secure-push.yaml and customize for your project
+
+# Minimum severity that causes a scan to fail
+# Options: CRITICAL, HIGH, MEDIUM, LOW
+severity_threshold: HIGH
+
+# Detector rules to ignore
+ignore_rules:
+  # - GENERIC_API_KEY
+  # - OPEN_CORS
+
+# File paths or glob patterns to skip
+ignore_paths:
+  - vendor/
+  - testdata/
+  - "**/*_test.go"
+  - "**/*.min.js"
+  - "**/node_modules/**"
+
+# Specific files to allow even if they trigger detectors
+allowlist:
+  # - scripts/dev-only.sh
+  # - examples/fixtures/example.env
+
+# Custom rule files
+# custom_rules:
+#   - path: rules/custom-secrets.yaml
+#     severity: CRITICAL
+
+# Output format: console, json, github
+# output_format: console
+
+# Enable verbose logging
+# verbose: false
