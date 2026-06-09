@@ -1,65 +1,160 @@
 package scanner
 
 import (
+	"fmt"
 	"os"
-	"sync"
-	"strings"
 	"path/filepath"
-	"github.com/stephenjarso/secure-push/internal/detectors"
+	"strings"
+	"sync"
 
-
-	"golang.org/x/sync/errgroup"
+	"secure-push/internal/config"
+	"secure-push/internal/detectors"
+	"secure-push/internal/logger"
 )
 
 type Scanner struct {
 	detectors []detectors.Detector
+	config    *config.Config
+	logger    *logger.Logger
 }
 
-func New(dets ...detectors.Detector) *Scanner {
-	return &Scanner{detectors: dets}
+func New(detectors []detectors.Detector, cfg *config.Config, log *logger.Logger) *Scanner {
+	return &Scanner{
+		detectors: detectors,
+		config:    cfg,
+		logger:    log,
+	}
 }
 
-func (s *Scanner) Scan(root string) ([]detectors.Finding, error) {
+func (s *Scanner) Scan(path string) ([]detectors.Finding, error) {
 	var findings []detectors.Finding
 	var mu sync.Mutex
-	var g errgroup.Group
+	var wg sync.WaitGroup
+	errCh := make(chan error, 1)
 
-	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(path, func(filePath string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
+
 		if info.IsDir() {
-			// Skip hidden dirs like .git
-			if strings.HasPrefix(filepath.Base(path), ".") && path != root {
+			if strings.HasPrefix(filepath.Base(filePath), ".") && filepath.Base(filePath) != "." {
 				return filepath.SkipDir
 			}
 			return nil
 		}
 
-		g.Go(func() error {
-			content, err := os.ReadFile(path)
+		if s.config.ShouldIgnore(filePath) {
+			s.logger.Debug("Skipping ignored file: %s", filePath)
+			return nil
+		}
+
+		fileInfo, err := os.Stat(filePath)
+		if err != nil {
+			return err
+		}
+
+		if fileInfo.Size() > s.config.MaxFileSize {
+			s.logger.Debug("Skipping large file: %s (size: %d)", filePath, fileInfo.Size())
+			return nil
+		}
+
+		isBinary, err := IsBinaryFile(filePath)
+		if err != nil {
+			return err
+		}
+		if isBinary {
+			s.logger.Debug("Skipping binary file: %s", filePath)
+			return nil
+		}
+
+		wg.Add(1)
+		go func(fp string) {
+			defer wg.Done()
+
+			fileFindings, err := s.scanFile(fp)
 			if err != nil {
-				return err
+				select {
+				case errCh <- err:
+				default:
+				}
+				return
 			}
 
-			for _, det := range s.detectors {
-				f, err := det.Detect(string(content), path)
-				if err != nil {
-					return err
-				}
-				if len(f) > 0 {
-					mu.Lock()
-					findings = append(findings, f...)
-					mu.Unlock()
-				}
+			if len(fileFindings) > 0 {
+				mu.Lock()
+				findings = append(findings, fileFindings...)
+				mu.Unlock()
 			}
-			return nil
-		})
+		}(filePath)
+
 		return nil
 	})
 
-	if err := g.Wait(); err != nil {
+	wg.Wait()
+	close(errCh)
+
+	if err != nil {
 		return nil, err
 	}
-	return findings, err
+
+	for err := range errCh {
+		s.logger.Error("Error scanning file: %v", err)
+	}
+
+	return findings, nil
+}
+
+func (s *Scanner) scanFile(path string) ([]detectors.Finding, error) {
+	content, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var allFindings []detectors.Finding
+
+	for _, det := range s.detectors {
+		if !s.config.IsDetectorEnabled(det.Name()) {
+			continue
+		}
+
+		findings, err := det.Detect(string(content), path)
+		if err != nil {
+			s.logger.Error("Error in detector %s: %v", det.Name(), err)
+			continue
+		}
+
+		for _, f := range findings {
+			if s.config.IsSeverityEnabled(f.Severity) {
+				allFindings = append(allFindings, f)
+			}
+		}
+	}
+
+	return allFindings, nil
+}
+
+func (s *Scanner) ScanFile(path string) ([]detectors.Finding, error) {
+	if s.config.ShouldIgnore(path) {
+		return nil, fmt.Errorf("file is ignored: %s", path)
+	}
+
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return nil, err
+	}
+
+	if fileInfo.Size() > s.config.MaxFileSize {
+		return nil, fmt.Errorf("file too large: %s", path)
+	}
+
+	isBinary, err := IsBinaryFile(path)
+	if err != nil {
+		return nil, err
+	}
+	if isBinary {
+		return nil, fmt.Errorf("binary file: %s", path)
+	}
+
+	return s.scanFile(path)
 }
