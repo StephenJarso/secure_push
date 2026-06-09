@@ -1,6 +1,5 @@
 # Dependencies
 vendor/
-go.sum
 
 # IDE
 .idea/
@@ -21,4 +20,4 @@ Thumbs.db
 # Build output
 bin/
 dist/
-secure-push
+/secure-push
