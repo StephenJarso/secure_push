@@ -1,10 +1,4 @@
-.PHONY: build test lint clean install pre-commit help
-
-# Variables
-BINARY_NAME=secure-push
-BUILD_DIR=bin
-GO=go
-GOLANGCI=golangci-lint
+.PHONY: help build test lint clean install docker-build docker-run
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
@@ -12,40 +6,47 @@ help: ## Show this help message
 	@echo 'Available targets:'
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-15s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-build: ## Build the binary
-	$(GO) build -o $(BUILD_DIR)/$(BINARY_NAME) ./cmd/secure-push
+build: ## Build the secure-push binary
+	go build -o secure-push ./cmd/secure-push
 
-test: ## Run tests
-	$(GO) test -v -race -coverprofile=coverage.out ./...
-	$(GO) tool cover -html=coverage.out -o coverage.html
+test: ## Run all tests
+	go test -v -race ./...
+
+test-short: ## Run short tests only
+	go test -short ./...
+
+test-coverage: ## Run tests with coverage report
+	go test -coverprofile=coverage.out ./...
+	go tool cover -html=coverage.out -o coverage.html
+	echo "Coverage report generated: coverage.html"
 
 lint: ## Run linter
-	$(GOLANGCI) run ./...
+	golangci-lint run
 
-clean: ## Remove build artifacts
-	rm -rf $(BUILD_DIR)/
+lint-fix: ## Run linter and fix issues
+	golangci-lint run --fix
+
+clean: ## Clean build artifacts
+	rm -f secure-push
 	rm -f coverage.out coverage.html
+	go clean
 
-install: build ## Install binary to /usr/local/bin
-	install -m 0755 $(BUILD_DIR)/$(BINARY_NAME) /usr/local/bin/$(BINARY_NAME)
+install: build ## Build and install secure-push
+	cp secure-push $(GOPATH)/bin/
 
-pre-commit: ## Install pre-commit hook
-	@echo "Installing pre-commit hook..."
-	@mkdir -p .git/hooks
-	@cp scripts/pre-commit .git/hooks/pre-commit
-	@chmod +x .git/hooks/pre-commit
-	@echo "Pre-commit hook installed!"
+docker-build: ## Build Docker image
+	docker build -t secure-push:latest .
 
-deps: ## Download dependencies
-	$(GO) mod download
-	$(GO) mod tidy
+docker-run: ## Run secure-push in Docker
+	docker run --rm -v $(PWD):/workspace secure-push:latest /workspace
+
+bench: ## Run benchmarks
+	go test -bench=. -benchmem ./...
 
 fmt: ## Format code
-	$(GO) fmt ./...
+	go fmt ./...
 
 vet: ## Run go vet
-	$(GO) vet ./...
+	go vet ./...
 
-check: fmt vet lint test ## Run all checks
-
-.DEFAULT_GOAL := help
+all: fmt vet lint test build ## Run all checks and build
