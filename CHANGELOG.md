@@ -8,16 +8,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Initial project structure and core detector interface
-- `.env` file detector (CRITICAL severity)
-- Parallel file scanner using `errgroup`
-- CLI with `--path` flag
-- `.gitignore` for Go artifacts, IDE files, and secrets
+- Comprehensive test suite for env.go detector
+- Secrets detector with common secret patterns
+- Auth detector for AWS keys, tokens, and credentials
+- Config detector for config file leaks
+- Reporter interface with console, JSON, and GitHub Actions support
+- Configuration file parsing with YAML support
+- Ignore/whitelist patterns support
+- Binary file detection and skipping
+- File size limits
+- Parallel scanning with worker pools
+- File type detection
+- Structured logging package
+- Pre-commit hook script
+- Multi-stage Dockerfile
+- Benchmarks for scanner performance
+- Integration tests
+- GitHub Actions CI workflow
+- golangci-lint configuration
+- Makefile with testing and building targets
 
-## [0.1.0] - 2024-01-01
-
-### Added
-- Project initialization
-- Basic README with feature overview and usage examples
-- MIT License
-- Contributing guidelines
+### Changed
+- Improved env.go with additional .env patterns and edge cases
+- Enhanced scanner with config integration
