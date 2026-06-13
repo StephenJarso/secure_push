@@ -35,13 +35,13 @@ func (r *CSVReporter) Report(findings []detectors.Finding) error {
 	}
 
 	// Write findings
-	for _, f := range findings {
+	for _, finding := range findings {
 		if err := w.Write([]string{
-			f.Rule,
-			string(f.Severity),
-			f.File,
-			fmt.Sprintf("%d", f.Line),
-			f.Message,
+			finding.Rule,
+			string(finding.Severity),
+			finding.File,
+			fmt.Sprintf("%d", finding.Line),
+			finding.Message,
 		}); err != nil {
 			return err
 		}

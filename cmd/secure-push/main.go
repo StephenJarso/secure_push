@@ -4,6 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/exec"
+	"strings"
 
 	"secure-push/internal/config"
 	"secure-push/internal/detectors"
@@ -106,6 +108,8 @@ func runScan(args []string) {
 		reporter = &reporters.JSONReporter{}
 	case "github":
 		reporter = &reporters.GitHubReporter{}
+	case "csv":
+		reporter = reporters.NewCSVReporter("findings.csv")
 	default:
 		reporter = &reporters.ConsoleReporter{}
 	}
@@ -204,7 +208,11 @@ secure-push pre-commit
 }
 
 func getStagedFiles() ([]string, error) {
-	// This is a simplified implementation
-	// In a real implementation, you would use exec.Command to run git diff --cached --name-only
-	return []string{}, nil
+	cmd := exec.Command("git", "diff", "--cached", "--name-only")
+	out, err := cmd.Output()
+	if err != nil {
+		return nil, err
+	}
+	files := strings.Fields(string(out))
+	return files, nil
 }
