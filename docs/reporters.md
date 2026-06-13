@@ -19,6 +19,7 @@ type Reporter interface {
 | Console | Human-readable terminal output | Local development |
 | JSON | Machine-readable JSON | CI/CD pipelines |
 | GitHub | GitHub Actions annotation format | GitHub Actions |
+| CSV | Comma-separated values | Data analysis, spreadsheets |
 
 ## Creating a Custom Reporter
 
@@ -77,3 +78,44 @@ func (r *CSVReporter) Report(findings []detectors.Finding) error {
     return nil
 }
 ```
+
+## Reporter Output Examples
+
+### Console Output
+
+```
+✗ Found 2 potential security issues:
+
+1. 🔴 [CRITICAL] .env:1
+   Rule: ENV_FILE
+   .env file should not be committed
+```
+
+### JSON Output
+
+```json
+{
+  "total": 2,
+  "findings": [
+    {
+      "severity": "CRITICAL",
+      "rule": "ENV_FILE",
+      "file": ".env",
+      "line": 1,
+      "message": ".env file should not be committed"
+    }
+  ]
+}
+```
+
+### GitHub Output
+
+```
+::error file=.env,line=1,title=ENV_FILE [CRITICAL]::.env file should not be committed
+```
+
+### CSV Output
+
+```csv
+Rule,Severity,File,Line,Message
+ENV_FILE,CRITICAL,.env,1,.env file should not be committed

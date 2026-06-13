@@ -13,28 +13,25 @@ func IsBinaryFile(path string) (bool, error) {
 	defer file.Close()
 
 	buffer := make([]byte, 512)
-	_, err = file.Read(buffer)
-	if err != nil {
+	n, err := file.Read(buffer)
+	if err != nil && err.Error() != "EOF" {
 		return false, err
 	}
 
-	return IsBinary(buffer), nil
+	return IsBinary(buffer[:n]), nil
 }
 
 func IsBinary(data []byte) bool {
-	for _, b := range data[:min(len(data), 512)] {
-		if b == 0 {
+	checkLen := len(data)
+	if checkLen > 512 {
+		checkLen = 512
+	}
+	for i := 0; i < checkLen; i++ {
+		if data[i] == 0 {
 			return true
 		}
 	}
 	return false
-}
-
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
 }
 
 func GetFileExtension(path string) string {

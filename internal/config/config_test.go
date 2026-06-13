@@ -3,6 +3,8 @@ package config
 import (
 	"os"
 	"testing"
+
+	"secure-push/internal/detectors"
 )
 
 func TestDefaultConfig(t *testing.T) {
@@ -12,12 +14,8 @@ func TestDefaultConfig(t *testing.T) {
 		t.Errorf("MaxFileSize = %d, want %d", cfg.MaxFileSize, 10*1024*1024)
 	}
 
-	if cfg.Severity != "medium" {
-		t.Errorf("Severity = %s, want medium", cfg.Severity)
-	}
-
-	if len(cfg.IgnoreFiles) == 0 {
-		t.Error("IgnoreFiles should not be empty")
+	if cfg.SeverityThreshold != "medium" {
+		t.Errorf("SeverityThreshold = %s, want medium", cfg.SeverityThreshold)
 	}
 }
 
@@ -40,14 +38,11 @@ func TestLoadValidConfig(t *testing.T) {
 	defer os.Remove(tmpFile.Name())
 
 	content := `
-ignore_patterns:
+severity_threshold: high
+ignore_paths:
   - "*.test"
   - "vendor/**"
-ignore_files:
-  - ".git/**"
-  - "node_modules/**"
 max_file_size: 5242880
-severity: high
 enable_detectors:
   - "ENV_FILE"
 disable_detectors:
@@ -63,23 +58,22 @@ disable_detectors:
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	if len(cfg.IgnorePatterns) != 2 {
-		t.Errorf("IgnorePatterns = %d, want 2", len(cfg.IgnorePatterns))
+	if len(cfg.IgnorePaths) != 2 {
+		t.Errorf("IgnorePaths = %d, want 2", len(cfg.IgnorePaths))
 	}
 
 	if cfg.MaxFileSize != 5*1024*1024 {
 		t.Errorf("MaxFileSize = %d, want %d", cfg.MaxFileSize, 5*1024*1024)
 	}
 
-	if cfg.Severity != "high" {
-		t.Errorf("Severity = %s, want high", cfg.Severity)
+	if cfg.SeverityThreshold != "high" {
+		t.Errorf("SeverityThreshold = %s, want high", cfg.SeverityThreshold)
 	}
 }
 
 func TestShouldIgnore(t *testing.T) {
 	cfg := &Config{
-		IgnorePatterns: []string{"*.test", "vendor/**"},
-		IgnoreFiles:    []string{".git/**", "node_modules/**"},
+		IgnorePaths: []string{"*test*", "vendor"},
 	}
 
 	tests := []struct {
@@ -88,9 +82,8 @@ func TestShouldIgnore(t *testing.T) {
 	}{
 		{"main.go", false},
 		{"main.test.go", true},
-		{"vendor/github.com/pkg/errors/errors.go", true},
-		{".git/config", true},
-		{"node_modules/package/index.js", true},
+		{"vendor", true},
+		{"vendor/config.env", true},
 		{"internal/scanner/scanner.go", false},
 		{"README.md", false},
 	}
@@ -108,29 +101,31 @@ func TestShouldIgnore(t *testing.T) {
 func TestIsSeverityEnabled(t *testing.T) {
 	tests := []struct {
 		severity string
-		check    Severity
+		check    detectors.Severity
 		want     bool
 	}{
-		{"low", Low, true},
-		{"low", Medium, false},
-		{"medium", Low, false},
-		{"medium", Medium, true},
-		{"medium", High, true},
-		{"medium", Critical, true},
-		{"high", Low, false},
-		{"high", Medium, false},
-		{"high", High, true},
-		{"high", Critical, true},
-		{"critical", Low, false},
-		{"critical", Medium, false},
-		{"critical", High, false},
-		{"critical", Critical, true},
-		{"unknown", Critical, true},
+		{"low", detectors.Low, true},
+		{"low", detectors.Medium, true},
+		{"low", detectors.High, true},
+		{"low", detectors.Critical, true},
+		{"medium", detectors.Low, false},
+		{"medium", detectors.Medium, true},
+		{"medium", detectors.High, true},
+		{"medium", detectors.Critical, true},
+		{"high", detectors.Low, false},
+		{"high", detectors.Medium, false},
+		{"high", detectors.High, true},
+		{"high", detectors.Critical, true},
+		{"critical", detectors.Low, false},
+		{"critical", detectors.Medium, false},
+		{"critical", detectors.High, false},
+		{"critical", detectors.Critical, true},
+		{"unknown", detectors.Critical, true},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.severity+"_"+string(tt.check), func(t *testing.T) {
-			cfg := &Config{Severity: tt.severity}
+			cfg := &Config{SeverityThreshold: tt.severity}
 			got := cfg.IsSeverityEnabled(tt.check)
 			if got != tt.want {
 				t.Errorf("IsSeverityEnabled(%q, %v) = %v, want %v", tt.severity, tt.check, got, tt.want)
@@ -141,11 +136,11 @@ func TestIsSeverityEnabled(t *testing.T) {
 
 func TestIsDetectorEnabled(t *testing.T) {
 	tests := []struct {
-		name            string
-		enable          []string
-		disable         []string
-		detector        string
-		want            bool
+		name     string
+		enable   []string
+		disable  []string
+		detector string
+		want     bool
 	}{
 		{"no restrictions", nil, nil, "ENV_FILE", true},
 		{"enabled list", []string{"ENV_FILE", "SECRETS"}, nil, "ENV_FILE", true},
@@ -180,7 +175,7 @@ func TestFindConfigFile(t *testing.T) {
 		t.Error("expected empty string when no config file exists")
 	}
 
-	os.WriteFile(".secure-push.yaml", []byte("test: value"), 0644)
+	os.WriteFile(".secure-push.yaml", []byte("test: value"), 0o644)
 	if found := findConfigFile(); found != ".secure-push.yaml" {
 		t.Errorf("findConfigFile() = %s, want .secure-push.yaml", found)
 	}

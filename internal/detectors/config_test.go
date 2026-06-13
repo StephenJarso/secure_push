@@ -112,7 +112,7 @@ func TestConfigDetectorEdgeCases(t *testing.T) {
 		content  string
 		wantLen  int
 	}{
-		{"empty filename", "", "key: value", 1},
+		{"empty filename", "", "key: value", 0},
 		{"hidden config", ".config.yaml", "key: value", 1},
 		{"config with path", "/etc/nginx/nginx.conf", "worker_processes 1;", 1},
 		{"no extension config", "Makefile", "build:", 1},

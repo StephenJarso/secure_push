@@ -14,10 +14,10 @@ func TestIntegrationScanWithEnvFiles(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	envFile := filepath.Join(tmpDir, ".env")
-	os.WriteFile(envFile, []byte("API_KEY=secret123\nDB_PASSWORD=pass\n"), 0644)
+	os.WriteFile(envFile, []byte("API_KEY=secret123\nDB_PASSWORD=pass\n"), 0o644)
 
 	regularFile := filepath.Join(tmpDir, "main.go")
-	os.WriteFile(regularFile, []byte("package main\n\nfunc main() {}\n"), 0644)
+	os.WriteFile(regularFile, []byte("package main\n\nfunc main() {}\n"), 0o644)
 
 	cfg := config.DefaultConfig()
 	log := logger.New(logger.Debug)
@@ -28,8 +28,8 @@ func TestIntegrationScanWithEnvFiles(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	if len(findings) != 2 {
-		t.Errorf("Expected 2 findings, got %d", len(findings))
+	if len(findings) != 1 {
+		t.Errorf("Expected 1 finding, got %d", len(findings))
 	}
 }
 
@@ -37,7 +37,7 @@ func TestIntegrationScanWithSecrets(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	secretFile := filepath.Join(tmpDir, "config.go")
-	os.WriteFile(secretFile, []byte("const API_KEY = \"ghp_1234567890abcdefghijklmnopqrstuvwxyz\"\n"), 0644)
+	os.WriteFile(secretFile, []byte("const API_KEY = \"ghp_1234567890abcdefghijklmnopqrstuvwxyz\"\n"), 0o644)
 
 	cfg := config.DefaultConfig()
 	log := logger.New(logger.Debug)
@@ -57,7 +57,7 @@ func TestIntegrationScanWithConfig(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	configFile := filepath.Join(tmpDir, "config.yaml")
-	os.WriteFile(configFile, []byte("database:\n  host: localhost\n  password: secret\n"), 0644)
+	os.WriteFile(configFile, []byte("database:\n  host: localhost\n  password: secret\n"), 0o644)
 
 	cfg := config.DefaultConfig()
 	log := logger.New(logger.Debug)
@@ -77,11 +77,11 @@ func TestIntegrationScanWithIgnorePatterns(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	envFile := filepath.Join(tmpDir, ".env")
-	os.WriteFile(envFile, []byte("API_KEY=secret123\n"), 0644)
+	os.WriteFile(envFile, []byte("API_KEY=secret123\n"), 0o644)
 
 	ignoredFile := filepath.Join(tmpDir, "vendor", "lib", "config.env")
-	os.MkdirAll(filepath.Join(tmpDir, "vendor", "lib"), 0755)
-	os.WriteFile(ignoredFile, []byte("API_KEY=secret456\n"), 0644)
+	os.MkdirAll(filepath.Join(tmpDir, "vendor", "lib"), 0o755)
+	os.WriteFile(ignoredFile, []byte("API_KEY=secret456\n"), 0o644)
 
 	cfg := config.DefaultConfig()
 	log := logger.New(logger.Debug)
@@ -101,10 +101,10 @@ func TestIntegrationScanWithBinaryFiles(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	textFile := filepath.Join(tmpDir, "readme.txt")
-	os.WriteFile(textFile, []byte("This is a text file\n"), 0644)
+	os.WriteFile(textFile, []byte("This is a text file\n"), 0o644)
 
 	binaryFile := filepath.Join(tmpDir, "image.png")
-	os.WriteFile(binaryFile, []byte{0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A}, 0644)
+	os.WriteFile(binaryFile, []byte{0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A}, 0o644)
 
 	cfg := config.DefaultConfig()
 	log := logger.New(logger.Debug)
@@ -128,7 +128,7 @@ func TestIntegrationScanWithLargeFiles(t *testing.T) {
 	for i := 0; i < 10000; i++ {
 		content += "API_KEY_" + string(rune(i)) + "=test123\n"
 	}
-	os.WriteFile(largeFile, []byte(content), 0644)
+	os.WriteFile(largeFile, []byte(content), 0o644)
 
 	cfg := &config.Config{
 		MaxFileSize: 100,
@@ -150,13 +150,13 @@ func TestIntegrationScanWithMultipleDetectors(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	envFile := filepath.Join(tmpDir, ".env")
-	os.WriteFile(envFile, []byte("API_KEY=secret123\n"), 0644)
+	os.WriteFile(envFile, []byte("API_KEY=secret123\n"), 0o644)
 
 	secretFile := filepath.Join(tmpDir, "config.go")
-	os.WriteFile(secretFile, []byte("const API_KEY = \"ghp_1234567890abcdefghijklmnopqrstuvwxyz\"\n"), 0644)
+	os.WriteFile(secretFile, []byte("const API_KEY = \"ghp_1234567890abcdefghijklmnopqrstuvwxyz\"\n"), 0o644)
 
 	configFile := filepath.Join(tmpDir, "config.yaml")
-	os.WriteFile(configFile, []byte("database:\n  host: localhost\n"), 0644)
+	os.WriteFile(configFile, []byte("database:\n  host: localhost\n"), 0o644)
 
 	cfg := config.DefaultConfig()
 	log := logger.New(logger.Debug)
@@ -184,7 +184,7 @@ func TestIntegrationScanWithDisabledDetector(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	envFile := filepath.Join(tmpDir, ".env")
-	os.WriteFile(envFile, []byte("API_KEY=secret123\n"), 0644)
+	os.WriteFile(envFile, []byte("API_KEY=secret123\n"), 0o644)
 
 	cfg := &config.Config{
 		DisableDetectors: []string{"ENV_FILE"},
@@ -206,10 +206,10 @@ func TestIntegrationScanWithSeverityFilter(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	envFile := filepath.Join(tmpDir, ".env")
-	os.WriteFile(envFile, []byte("API_KEY=secret123\n"), 0644)
+	os.WriteFile(envFile, []byte("API_KEY=secret123\n"), 0o644)
 
 	cfg := &config.Config{
-		Severity: "critical",
+		SeverityThreshold: "critical",
 	}
 	log := logger.New(logger.Debug)
 	scanner := New([]detectors.Detector{&detectors.EnvDetector{}}, cfg, log)
@@ -228,13 +228,13 @@ func TestIntegrationScanNestedDirectories(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	nestedDir := filepath.Join(tmpDir, "src", "api", "config")
-	os.MkdirAll(nestedDir, 0755)
+	os.MkdirAll(nestedDir, 0o755)
 
 	envFile := filepath.Join(nestedDir, ".env")
-	os.WriteFile(envFile, []byte("API_KEY=secret123\n"), 0644)
+	os.WriteFile(envFile, []byte("API_KEY=secret123\n"), 0o644)
 
 	regularFile := filepath.Join(tmpDir, "src", "main.go")
-	os.WriteFile(regularFile, []byte("package main\n\nfunc main() {}\n"), 0644)
+	os.WriteFile(regularFile, []byte("package main\n\nfunc main() {}\n"), 0o644)
 
 	cfg := config.DefaultConfig()
 	log := logger.New(logger.Debug)

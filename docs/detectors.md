@@ -22,6 +22,8 @@ type Detector interface {
 | AWS_SECRET_KEY | CRITICAL | Detects AWS secret keys |
 | GENERIC_API_KEY | HIGH | Detects generic API keys |
 | HARDCODED_PASSWORD | CRITICAL | Detects hardcoded passwords |
+| AUTH_CREDENTIALS | CRITICAL | Detects various auth credentials (GitHub tokens, SSH keys, etc.) |
+| CONFIG_FILE | HIGH | Detects config files that may contain sensitive data |
 
 ## Creating a Custom Detector
 
@@ -109,3 +111,10 @@ func TestGenericAPIKeyDetector(t *testing.T) {
     }
 }
 ```
+
+## Detector Best Practices
+
+- Keep patterns specific to reduce false positives
+- Test with real-world code samples
+- Document the patterns used in comments
+- Consider performance for large files

@@ -3,29 +3,42 @@ package config
 import (
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
 	"gopkg.in/yaml.v3"
+
+	"secure-push/internal/detectors"
 )
 
+// CustomRule represents a user-defined rule
+type CustomRule struct {
+	Path     string             `yaml:"path"`
+	Severity detectors.Severity `yaml:"severity"`
+}
+
 type Config struct {
-	IgnorePatterns  []string `yaml:"ignore_patterns"`
-	IgnoreFiles     []string `yaml:"ignore_files"`
-	MaxFileSize     int64    `yaml:"max_file_size"`
-	Severity        string   `yaml:"severity"`
-	EnableDetectors []string `yaml:"enable_detectors"`
-	DisableDetectors []string `yaml:"disable_detectors"`
+	SeverityThreshold string       `yaml:"severity_threshold"`
+	IgnoreRules       []string     `yaml:"ignore_rules"`
+	IgnorePaths       []string     `yaml:"ignore_paths"`
+	Allowlist         []string     `yaml:"allowlist"`
+	CustomRules       []CustomRule `yaml:"custom_rules"`
+	MaxFileSize       int64        `yaml:"max_file_size"`
+	EnableDetectors   []string     `yaml:"enable_detectors"`
+	DisableDetectors  []string     `yaml:"disable_detectors"`
 }
 
 func DefaultConfig() *Config {
 	return &Config{
-		IgnorePatterns:  []string{},
-		IgnoreFiles:     []string{".git/**", "vendor/**", "node_modules/**"},
-		MaxFileSize:     10 * 1024 * 1024,
-		Severity:        "medium",
-		EnableDetectors: []string{},
-		DisableDetectors: []string{},
+		SeverityThreshold: "medium",
+		IgnoreRules:       []string{},
+		IgnorePaths:       []string{},
+		Allowlist:         []string{},
+		CustomRules:       []CustomRule{},
+		MaxFileSize:       10 * 1024 * 1024,
+		EnableDetectors:   []string{},
+		DisableDetectors:  []string{},
 	}
 }
 
@@ -42,6 +55,10 @@ func Load(configPath string) (*Config, error) {
 
 	data, err := os.ReadFile(configPath)
 	if err != nil {
+		// Return default config if file doesn't exist
+		if os.IsNotExist(err) {
+			return cfg, nil
+		}
 		return nil, fmt.Errorf("failed to read config file: %w", err)
 	}
 
@@ -59,9 +76,9 @@ func findConfigFile() string {
 		".secure-push.json",
 	}
 
-	for _, path := range possiblePaths {
-		if _, err := os.Stat(path); err == nil {
-			return path
+	for _, p := range possiblePaths {
+		if _, err := os.Stat(p); err == nil {
+			return p
 		}
 	}
 
@@ -69,23 +86,16 @@ func findConfigFile() string {
 }
 
 func (c *Config) ShouldIgnore(path string) bool {
-	base := filepath.Base(path)
-
-	for _, ignoreFile := range c.IgnoreFiles {
-		matched, err := filepath.Match(ignoreFile, base)
-		if err == nil && matched {
-			return true
-		}
-
-		matched, err = filepath.Match(ignoreFile, path)
-		if err == nil && matched {
-			return true
+	// Check allowlist first - if file is in allowlist, don't ignore it
+	for _, allowed := range c.Allowlist {
+		if matchPath(allowed, path) {
+			return false
 		}
 	}
 
-	for _, pattern := range c.IgnorePatterns {
-		matched, err := filepath.Match(pattern, path)
-		if err == nil && matched {
+	// Check ignore paths
+	for _, ignorePath := range c.IgnorePaths {
+		if matchPath(ignorePath, path) {
 			return true
 		}
 	}
@@ -93,22 +103,62 @@ func (c *Config) ShouldIgnore(path string) bool {
 	return false
 }
 
-func (c *Config) IsSeverityEnabled(severity Severity) bool {
-	switch c.Severity {
+// matchPath handles both simple patterns and glob patterns
+func matchPath(pattern, targetPath string) bool {
+	// Try direct match with filepath.Match
+	matched, err := filepath.Match(pattern, targetPath)
+	if err == nil && matched {
+		return true
+	}
+
+	// Try matching just the base name
+	matched, err = filepath.Match(pattern, filepath.Base(targetPath))
+	if err == nil && matched {
+		return true
+	}
+
+	// Try matching with path.Match (for ** support)
+	matched, err = path.Match(pattern, targetPath)
+	if err == nil && matched {
+		return true
+	}
+
+	// Check if path contains the pattern (for directory matching)
+	if strings.Contains(targetPath, pattern) {
+		return true
+	}
+
+	// Check if path starts with pattern (for directory prefix matching)
+	if strings.HasPrefix(targetPath, pattern) {
+		return true
+	}
+
+	return false
+}
+
+func (c *Config) IsSeverityEnabled(severity detectors.Severity) bool {
+	switch c.SeverityThreshold {
 	case "low":
 		return true
 	case "medium":
-		return severity != Low
+		return severity != detectors.Low
 	case "high":
-		return severity == High || severity == Critical
+		return severity == detectors.High || severity == detectors.Critical
 	case "critical":
-		return severity == Critical
+		return severity == detectors.Critical
 	default:
 		return true
 	}
 }
 
 func (c *Config) IsDetectorEnabled(detectorName string) bool {
+	// Check if detector is in ignore_rules
+	for _, ignored := range c.IgnoreRules {
+		if strings.EqualFold(ignored, detectorName) {
+			return false
+		}
+	}
+
 	if len(c.EnableDetectors) > 0 {
 		for _, enabled := range c.EnableDetectors {
 			if strings.EqualFold(enabled, detectorName) {

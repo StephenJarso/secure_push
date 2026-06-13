@@ -25,6 +25,12 @@ allowlist:
 custom_rules:
   - path: rules/custom-secrets.yaml
     severity: CRITICAL
+
+max_file_size: 10485760
+
+enable_detectors:
+  - ENV_FILE
+  - SECRETS
 ```
 
 ## Configuration Options
@@ -79,6 +85,33 @@ custom_rules:
     severity: CRITICAL
 ```
 
+### max_file_size
+
+Maximum file size in bytes to scan. Files larger than this are skipped.
+
+```yaml
+max_file_size: 10485760  # 10MB
+```
+
+### enable_detectors
+
+List of specific detectors to enable. If set, only these detectors will run.
+
+```yaml
+enable_detectors:
+  - ENV_FILE
+  - SECRETS
+```
+
+### disable_detectors
+
+List of specific detectors to disable.
+
+```yaml
+disable_detectors:
+  - CONFIG_FILE
+```
+
 ## Environment Variables
 
 | Variable | Description | Default |
@@ -93,3 +126,32 @@ custom_rules:
 2. Environment variables
 3. `.secure-push.yaml` config file
 4. Default values
+
+## Common Configuration Patterns
+
+### Minimal Configuration
+
+```yaml
+severity_threshold: HIGH
+ignore_paths:
+  - vendor/
+  - node_modules/
+```
+
+### Development Environment
+
+```yaml
+severity_threshold: MEDIUM
+ignore_rules:
+  - GENERIC_API_KEY
+allowlist:
+  - testdata/
+```
+
+### CI/CD Configuration
+
+```yaml
+severity_threshold: CRITICAL
+ignore_paths:
+  - "**/*.min.js"
+  - "**/*.map"

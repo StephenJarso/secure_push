@@ -26,8 +26,8 @@ var configFilenames = map[string]bool{
 	"application": true, "appsettings": true, "web.config": true,
 	"app.config": true, "package.json": true, "composer.json": true,
 	"pom.xml": true, "build.gradle": true, "requirements.txt": true,
-	"Gemfile": true, "Dockerfile": true, "docker-compose.yml": true,
-	"docker-compose.yaml": true, "Makefile": true, "CMakeLists.txt": true,
+	"gemfile": true, "dockerfile": true, "docker-compose.yml": true,
+	"docker-compose.yaml": true, "makefile": true, "cmakelists.txt": true,
 }
 
 func (d *ConfigDetector) Detect(content string, filename string) ([]Finding, error) {
