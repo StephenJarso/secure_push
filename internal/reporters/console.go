@@ -18,13 +18,6 @@ func (r *ConsoleReporter) Report(findings []detectors.Finding) error {
 
 	fmt.Printf("✗ Found %d potential security issues:\n\n", len(findings))
 
-	severityOrder := map[detectors.Severity]int{
-		detectors.Critical: 0,
-		detectors.High:     1,
-		detectors.Medium:   2,
-		detectors.Low:      3,
-	}
-
 	for i, f := range findings {
 		severityIcon := getSeverityIcon(f.Severity)
 		fmt.Printf("%d. %s [%s] %s:%d\n", i+1, severityIcon, strings.ToUpper(string(f.Severity)), f.File, f.Line)
