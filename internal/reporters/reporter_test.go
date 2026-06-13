@@ -42,3 +42,15 @@ func TestGitHubReporter(t *testing.T) {
 	// Note: Report calls os.Exit(1) when findings exist, so we test with empty findings
 	_ = reporter.Report([]detectors.Finding{})
 }
+
+func TestCSVReporter(t *testing.T) {
+	findings := []detectors.Finding{
+		{Severity: detectors.Critical, Rule: "TEST_RULE", File: "test.go", Line: 10, Message: "Test message"},
+	}
+
+	reporter := NewCSVReporter(t.TempDir() + "/test.csv")
+	err := reporter.Report(findings)
+	if err != nil {
+		t.Errorf("CSVReporter.Report failed: %v", err)
+	}
+}
