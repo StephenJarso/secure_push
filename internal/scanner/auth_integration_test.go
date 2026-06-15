@@ -74,3 +74,25 @@ func TestIntegrationScanFileSkipsBinaryFile(t *testing.T) {
 		t.Fatal("ScanFile() error = nil, want binary file error")
 	}
 }
+
+func TestIntegrationScanFileRejectsIgnoredFile(t *testing.T) {
+	tmpFile, err := os.CreateTemp(t.TempDir(), "config-*.go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := tmpFile.WriteString("intercom_token = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'\n"); err != nil {
+		t.Fatal(err)
+	}
+	if err := tmpFile.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	cfg := &config.Config{
+		IgnorePaths: []string{tmpFile.Name()},
+	}
+	scanner := New([]detectors.Detector{&detectors.AuthDetector{}}, cfg, logger.New(logger.Debug))
+	_, err = scanner.ScanFile(tmpFile.Name())
+	if err == nil {
+		t.Fatal("ScanFile() error = nil, want ignored file error")
+	}
+}
