@@ -47,3 +47,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved env.go with additional .env patterns and edge cases
 - Enhanced scanner with config integration
 - Updated main.go to support sarif output format
+- Added GitHub Actions release workflow
+
+### Fixed
+- Fixed .env.* file detection in config detector
+- Fixed duplicate test cases in env_test.go
+- Fixed integration test for multiple detectors
+
+### Security
+- Added comprehensive test coverage for all detectors
