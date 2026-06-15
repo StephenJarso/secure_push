@@ -32,6 +32,9 @@ func (s *Scanner) Scan(path string) ([]detectors.Finding, error) {
 	var wg sync.WaitGroup
 	errCh := make(chan error, 1)
 
+	// Limit concurrent goroutines to prevent resource exhaustion
+	sem := make(chan struct{}, 100)
+
 	err := filepath.Walk(path, func(filePath string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -71,6 +74,8 @@ func (s *Scanner) Scan(path string) ([]detectors.Finding, error) {
 		wg.Add(1)
 		go func(fp string) {
 			defer wg.Done()
+			sem <- struct{}{}
+			defer func() { <-sem }()
 
 			fileFindings, err := s.scanFile(fp)
 			if err != nil {
