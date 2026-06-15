@@ -20,6 +20,7 @@ type Reporter interface {
 | JSON | Machine-readable JSON | CI/CD pipelines |
 | GitHub | GitHub Actions annotation format | GitHub Actions |
 | CSV | Comma-separated values | Data analysis, spreadsheets |
+| SARIF | Static Analysis Results Interchange Format | CI/CD, GitHub Code Scanning, IDEs |
 
 ## Creating a Custom Reporter
 
@@ -119,3 +120,57 @@ func (r *CSVReporter) Report(findings []detectors.Finding) error {
 ```csv
 Rule,Severity,File,Line,Message
 ENV_FILE,CRITICAL,.env,1,.env file should not be committed
+```
+
+### SARIF Output
+
+```json
+{
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Secure Push",
+          "version": "0.1.0",
+          "rules": [
+            {
+              "id": "ENV_FILE",
+              "shortDescription": {
+                "text": "ENV_FILE security issue detected"
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "ENV_FILE",
+          "message": {
+            "text": ".env file should not be committed"
+          },
+          "locations": [
+            {
+              "id": 1,
+              "uri": ".env",
+              "properties": {
+                "line": 1
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+SARIF is the industry standard format for static analysis tools. It's supported by:
+- GitHub Code Scanning
+- Azure DevOps
+- GitLab
+- VS Code
+- Many other CI/CD and IDE tools
