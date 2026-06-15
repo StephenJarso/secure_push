@@ -227,3 +227,78 @@ func TestAuthDetector_Detect_NoError(t *testing.T) {
 		t.Fatalf("Detect() error = %v, want nil", err)
 	}
 }
+
+func TestAuthDetector_DetectProviderMessages(t *testing.T) {
+	tests := []struct {
+		name    string
+		content string
+		want    string
+	}{
+		{
+			name:    "figma",
+			content: "figma_token = 'figd_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGH'",
+			want:    "Figma token found",
+		},
+		{
+			name:    "notion",
+			content: "notion_token = 'secret_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrs'",
+			want:    "Notion token found",
+		},
+		{
+			name:    "linear",
+			content: "linear_api_token = 'lin_api_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGH'",
+			want:    "Linear API token found",
+		},
+		{
+			name:    "auth0",
+			content: "auth0_token = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJ.ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijkl'",
+			want:    "Auth0 token found",
+		},
+		{
+			name:    "intercom",
+			content: "intercom_token = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'",
+			want:    "Intercom token found",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &AuthDetector{}
+			got, err := d.Detect(tt.content, "config.go")
+			if err != nil {
+				t.Fatalf("Detect() error = %v", err)
+			}
+			if len(got) != 1 {
+				t.Fatalf("Detect() returned %d findings, want 1", len(got))
+			}
+			if got[0].Message != tt.want {
+				t.Errorf("Message = %q, want %q", got[0].Message, tt.want)
+			}
+		})
+	}
+}
+
+func TestAuthDetector_DetectProviderLineNumbers(t *testing.T) {
+	d := &AuthDetector{}
+	got, err := d.Detect("line1\nintercom_token = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'", "config.go")
+	if err != nil {
+		t.Fatalf("Detect() error = %v", err)
+	}
+	if len(got) != 1 {
+		t.Fatalf("Detect() returned %d findings, want 1", len(got))
+	}
+	if got[0].Line != 2 {
+		t.Errorf("Line = %d, want 2", got[0].Line)
+	}
+}
+
+func TestAuthDetector_DetectProviderWhitespaceComments(t *testing.T) {
+	d := &AuthDetector{}
+	got, err := d.Detect("  # intercom_token = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'", "config.go")
+	if err != nil {
+		t.Fatalf("Detect() error = %v", err)
+	}
+	if len(got) != 0 {
+		t.Fatalf("Detect() returned %d findings, want 0", len(got))
+	}
+}
