@@ -38,6 +38,11 @@ The `AUTH_CREDENTIALS` detector identifies various authentication tokens and cre
 - **Telegram Bot Tokens**: `1234567890:...`
 - **Azure Key Vault**: `-----BEGIN AZURE KEY VAULT-----`
 - **Personal Access Tokens**: Various formats
+- **Figma Tokens**: `figd_...`
+- **Notion Tokens**: `secret_...`
+- **Linear API Tokens**: `lin_api_...`
+- **Auth0 Tokens**: JWT-like tokens with long segments
+- **Intercom Tokens**: 40-character tokens assigned to Intercom access token variables
 - **SSH/PGP Keys**: Private key headers
 - **JWT Tokens**: JSON Web Tokens
 - **Bearer Tokens**: Authorization headers
