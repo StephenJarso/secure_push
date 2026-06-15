@@ -118,6 +118,12 @@ func TestIsDir(t *testing.T) {
 	}
 }
 
+func TestIsDirWithMissingPath(t *testing.T) {
+	if IsDir("/nonexistent/path") {
+		t.Error("IsDir() = true, want false for missing path")
+	}
+}
+
 func TestGetRelativePath(t *testing.T) {
 	base := "/home/user/project"
 	path := "/home/user/project/src/main.go"
