@@ -27,7 +27,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GitHub Actions CI workflow
 - golangci-lint configuration
 - Makefile with testing and building targets
+- Slack token detector (xoxb, xoxa, xoxp, xoxr, xoxs)
+- Discord webhook URL detector
+- Telegram bot token detector
+- Azure Key Vault detector
+- Personal access token detector
+- Hardcoded password pattern detection
+- Connection string pattern detection
+- API key header pattern detection
+- Authorization header pattern detection
+- Webhook URL pattern detection
+- .envrc file detection
+- .env.sample file detection
+- SARIF output format reporter for CI/CD integration
+- Homebrew tap formula for installation
+- VS Code extension manifest
 
 ### Changed
 - Improved env.go with additional .env patterns and edge cases
 - Enhanced scanner with config integration
+- Updated main.go to support sarif output format
