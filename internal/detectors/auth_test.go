@@ -313,3 +313,17 @@ func TestAuthDetector_DetectIntercomTokenFalsePositiveGuard(t *testing.T) {
 		t.Fatalf("Detect() returned %d findings, want 0", len(got))
 	}
 }
+
+func TestAuthDetector_DetectProviderOneFindingPerLine(t *testing.T) {
+	d := &AuthDetector{}
+	got, err := d.Detect("intercom_token = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'\nintercom_access_token = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'", "config.go")
+	if err != nil {
+		t.Fatalf("Detect() error = %v", err)
+	}
+	if len(got) != 2 {
+		t.Fatalf("Detect() returned %d findings, want 2", len(got))
+	}
+	if got[0].Line != 1 || got[1].Line != 2 {
+		t.Errorf("Lines = [%d, %d], want [1, 2]", got[0].Line, got[1].Line)
+	}
+}
