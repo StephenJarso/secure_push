@@ -302,3 +302,14 @@ func TestAuthDetector_DetectProviderWhitespaceComments(t *testing.T) {
 		t.Fatalf("Detect() returned %d findings, want 0", len(got))
 	}
 }
+
+func TestAuthDetector_DetectIntercomTokenFalsePositiveGuard(t *testing.T) {
+	d := &AuthDetector{}
+	got, err := d.Detect("random_string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'", "config.go")
+	if err != nil {
+		t.Fatalf("Detect() error = %v", err)
+	}
+	if len(got) != 0 {
+		t.Fatalf("Detect() returned %d findings, want 0", len(got))
+	}
+}
