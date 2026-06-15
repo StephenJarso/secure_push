@@ -37,7 +37,26 @@ var (
 	telegramBotTokenPattern    = regexp.MustCompile(`[0-9]{8,10}:[A-Za-z0-9\-_]{35,}`)
 	azureKeyPattern            = regexp.MustCompile(`-----BEGIN AZURE KEY VAULT-----`)
 	personalAccessTokenPattern = regexp.MustCompile(`[A-Za-z0-9\-_]{20,}\.[A-Za-z0-9\-_]{60,}`)
+	figmaTokenPattern          = regexp.MustCompile(`figd_[A-Za-z0-9]{60,}`)
+	notionTokenPattern         = regexp.MustCompile(`secret_[A-Za-z0-9]{43}`)
+	linearTokenPattern         = regexp.MustCompile(`lin_api_[A-Za-z0-9]{64}`)
+	intercomTokenPattern       = regexp.MustCompile(`(?i)(intercom(?:_|[-[:space:]])?(?:access[_-]?)?token|access[_-]?token)\s*[:=]\s*['"]?[A-Za-z0-9]{40,}['"]?`)
+	auth0TokenPattern          = regexp.MustCompile(`[A-Za-z0-9\-_]{80,}\.[A-Za-z0-9\-_]{32,}`)
 )
+
+type authRule struct {
+	pattern  *regexp.Regexp
+	message  string
+	severity Severity
+}
+
+var providerAuthRules = []authRule{
+	{pattern: figmaTokenPattern, message: "Figma token found", severity: High},
+	{pattern: notionTokenPattern, message: "Notion token found", severity: High},
+	{pattern: linearTokenPattern, message: "Linear API token found", severity: High},
+	{pattern: auth0TokenPattern, message: "Auth0 token found", severity: High},
+	{pattern: intercomTokenPattern, message: "Intercom token found", severity: High},
+}
 
 func (d *AuthDetector) Detect(content string, filename string) ([]Finding, error) {
 	var findings []Finding
@@ -257,6 +276,23 @@ func (d *AuthDetector) Detect(content string, filename string) ([]Finding, error
 				Line:     lineNum + 1,
 				Message:  "Personal access token found",
 			})
+		}
+
+		seenProviderFindings := make(map[string]struct{}, len(providerAuthRules))
+		for _, rule := range providerAuthRules {
+			if rule.pattern.MatchString(line) {
+				if _, seen := seenProviderFindings[rule.message]; seen {
+					continue
+				}
+				findings = append(findings, Finding{
+					Rule:     d.Name(),
+					Severity: rule.severity,
+					File:     filename,
+					Line:     lineNum + 1,
+					Message:  rule.message,
+				})
+				seenProviderFindings[rule.message] = struct{}{}
+			}
 		}
 	}
 

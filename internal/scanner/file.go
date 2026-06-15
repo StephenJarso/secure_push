@@ -1,6 +1,8 @@
 package scanner
 
 import (
+	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"sync"
@@ -26,7 +28,7 @@ func IsBinaryFile(path string) (bool, error) {
 	buffer := *bufPtr
 
 	n, err := file.Read(buffer)
-	if err != nil && err.Error() != "EOF" {
+	if err != nil && !errors.Is(err, io.EOF) {
 		return false, err
 	}
 

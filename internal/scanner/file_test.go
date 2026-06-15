@@ -128,6 +128,27 @@ func TestIsTextFile(t *testing.T) {
 	})
 }
 
+func TestIsTextFileWithBinaryFile(t *testing.T) {
+	tmpFile, err := os.CreateTemp("", "binary-*.bin")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(tmpFile.Name())
+
+	if _, err := tmpFile.Write([]byte{0x00, 0x01, 0x02}); err != nil {
+		t.Fatal(err)
+	}
+	tmpFile.Close()
+
+	isText, err := IsTextFile(tmpFile.Name())
+	if err != nil {
+		t.Fatalf("IsTextFile() error = %v", err)
+	}
+	if isText {
+		t.Error("IsTextFile() = true, want false for binary file")
+	}
+}
+
 func TestIsBinaryFileWithSmallFile(t *testing.T) {
 	// Test that files smaller than 512 bytes are handled correctly
 	tmpFile, err := os.CreateTemp("", "small-*.txt")
@@ -205,5 +226,52 @@ func TestIsBinaryFileInSubdir(t *testing.T) {
 
 	if isBinary {
 		t.Error("IsBinaryFile() = true, want false for text file in subdir")
+	}
+}
+
+func BenchmarkIsBinary(b *testing.B) {
+	textData := make([]byte, 512)
+	for i := range textData {
+		textData[i] = 'a'
+	}
+
+	binaryData := make([]byte, 512)
+	for i := range binaryData {
+		binaryData[i] = byte(i % 256)
+	}
+	binaryData[100] = 0 // Add null byte
+
+	b.Run("text data", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			IsBinary(textData)
+		}
+	})
+
+	b.Run("binary data", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			IsBinary(binaryData)
+		}
+	})
+}
+
+func BenchmarkBufferPool(b *testing.B) {
+	b.Run("get and put", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			bufPtr := bufferPool.Get().(*[]byte)
+			_ = (*bufPtr)[0]
+			bufferPool.Put(bufPtr)
+		}
+	})
+}
+
+func BenchmarkTextClassification(b *testing.B) {
+	textData := make([]byte, 512)
+	for i := range textData {
+		textData[i] = 'a'
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = IsBinary(textData)
 	}
 }

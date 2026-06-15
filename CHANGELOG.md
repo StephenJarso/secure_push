@@ -32,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Telegram bot token detector
 - Azure Key Vault detector
 - Personal access token detector
+- Provider access token detectors for Figma, Notion, Linear, Auth0, and Intercom
+- Scanner binary detection benchmarks
 - Hardcoded password pattern detection
 - Connection string pattern detection
 - API key header pattern detection

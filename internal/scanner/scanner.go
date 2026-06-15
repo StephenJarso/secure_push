@@ -144,7 +144,7 @@ func (s *Scanner) ScanFile(path string) ([]detectors.Finding, error) {
 		return nil, fmt.Errorf("file is ignored: %s", path)
 	}
 
-	fileInfo, err := os.Stat(path)
+	fileInfo, err := GetFileInfo(path)
 	if err != nil {
 		return nil, err
 	}

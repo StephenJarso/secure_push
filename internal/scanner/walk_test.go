@@ -35,6 +35,30 @@ func TestWalkDir(t *testing.T) {
 	}
 }
 
+func TestWalkDirSkipsHiddenDirectory(t *testing.T) {
+	tmpDir := t.TempDir()
+	hiddenDir := filepath.Join(tmpDir, ".hidden")
+	if err := os.MkdirAll(hiddenDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	hiddenFile := filepath.Join(hiddenDir, "secret.txt")
+	if err := os.WriteFile(hiddenFile, []byte("secret"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	var visited []string
+	err := WalkDir(tmpDir, func(path string, info os.FileInfo) error {
+		visited = append(visited, filepath.Base(path))
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("WalkDir() error = %v", err)
+	}
+	if len(visited) != 0 {
+		t.Errorf("WalkDir() visited %d files, want 0", len(visited))
+	}
+}
+
 func TestGetFileSize(t *testing.T) {
 	tmpFile, err := os.CreateTemp("", "test-*.txt")
 	if err != nil {
@@ -94,6 +118,12 @@ func TestIsDir(t *testing.T) {
 	}
 }
 
+func TestIsDirWithMissingPath(t *testing.T) {
+	if IsDir("/nonexistent/path") {
+		t.Error("IsDir() = true, want false for missing path")
+	}
+}
+
 func TestGetRelativePath(t *testing.T) {
 	base := "/home/user/project"
 	path := "/home/user/project/src/main.go"
@@ -105,6 +135,13 @@ func TestGetRelativePath(t *testing.T) {
 
 	if rel != "src/main.go" {
 		t.Errorf("GetRelativePath() = %s, want src/main.go", rel)
+	}
+}
+
+func TestGetRelativePathError(t *testing.T) {
+	_, err := GetRelativePath("/tmp/secure-push-a", "/tmp/secure-push-b")
+	if err == nil {
+		t.Fatal("GetRelativePath() error = nil, want error")
 	}
 }
 

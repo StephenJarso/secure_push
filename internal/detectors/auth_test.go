@@ -130,7 +130,7 @@ func TestAuthDetector_Detect(t *testing.T) {
 		{
 			name:     "slack token",
 			filename: "config.go",
-			content:  "slack_token = 'xoxb-1234567890-123456789012-ABCDEFGHIJKLMNO'",
+			content:  "slack_token = 'xoxb-test0000000-test00000000000-TESTTESTTEST'",
 			wantMin:  1,
 		},
 		{
@@ -160,8 +160,38 @@ func TestAuthDetector_Detect(t *testing.T) {
 		{
 			name:     "multiple slack tokens",
 			filename: "config.go",
-			content:  "token1 = 'xoxb-1234567890-123456789012-ABCDEFGHIJKLMNO'\ntoken2 = 'xoxa-1234567890-123456789012-ABCDEFGHIJKLMNO'",
+			content:  "token1 = 'xoxb-test0000000-test00000000000-TESTTESTTEST'\ntoken2 = 'xoxa-test0000000-test00000000000-TESTTESTTEST'",
 			wantMin:  2,
+		},
+		{
+			name:     "figma token",
+			filename: "config.go",
+			content:  "figma_token = 'figd_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGH'",
+			wantMin:  1,
+		},
+		{
+			name:     "notion token",
+			filename: "config.go",
+			content:  "notion_token = 'secret_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrs'",
+			wantMin:  1,
+		},
+		{
+			name:     "linear api token",
+			filename: "config.go",
+			content:  "linear_api_token = 'lin_api_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGH'",
+			wantMin:  1,
+		},
+		{
+			name:     "auth0 token",
+			filename: "config.go",
+			content:  "auth0_token = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJ.ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijkl'",
+			wantMin:  1,
+		},
+		{
+			name:     "intercom token",
+			filename: "config.go",
+			content:  "intercom_token = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'",
+			wantMin:  1,
 		},
 	}
 
@@ -195,5 +225,105 @@ func TestAuthDetector_Detect_NoError(t *testing.T) {
 	_, err := d.Detect("some content", "main.go")
 	if err != nil {
 		t.Fatalf("Detect() error = %v, want nil", err)
+	}
+}
+
+func TestAuthDetector_DetectProviderMessages(t *testing.T) {
+	tests := []struct {
+		name    string
+		content string
+		want    string
+	}{
+		{
+			name:    "figma",
+			content: "figma_token = 'figd_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGH'",
+			want:    "Figma token found",
+		},
+		{
+			name:    "notion",
+			content: "notion_token = 'secret_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrs'",
+			want:    "Notion token found",
+		},
+		{
+			name:    "linear",
+			content: "linear_api_token = 'lin_api_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGH'",
+			want:    "Linear API token found",
+		},
+		{
+			name:    "auth0",
+			content: "auth0_token = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJ.ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijkl'",
+			want:    "Auth0 token found",
+		},
+		{
+			name:    "intercom",
+			content: "intercom_token = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'",
+			want:    "Intercom token found",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := &AuthDetector{}
+			got, err := d.Detect(tt.content, "config.go")
+			if err != nil {
+				t.Fatalf("Detect() error = %v", err)
+			}
+			if len(got) != 1 {
+				t.Fatalf("Detect() returned %d findings, want 1", len(got))
+			}
+			if got[0].Message != tt.want {
+				t.Errorf("Message = %q, want %q", got[0].Message, tt.want)
+			}
+		})
+	}
+}
+
+func TestAuthDetector_DetectProviderLineNumbers(t *testing.T) {
+	d := &AuthDetector{}
+	got, err := d.Detect("line1\nintercom_token = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'", "config.go")
+	if err != nil {
+		t.Fatalf("Detect() error = %v", err)
+	}
+	if len(got) != 1 {
+		t.Fatalf("Detect() returned %d findings, want 1", len(got))
+	}
+	if got[0].Line != 2 {
+		t.Errorf("Line = %d, want 2", got[0].Line)
+	}
+}
+
+func TestAuthDetector_DetectProviderWhitespaceComments(t *testing.T) {
+	d := &AuthDetector{}
+	got, err := d.Detect("  # intercom_token = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'", "config.go")
+	if err != nil {
+		t.Fatalf("Detect() error = %v", err)
+	}
+	if len(got) != 0 {
+		t.Fatalf("Detect() returned %d findings, want 0", len(got))
+	}
+}
+
+func TestAuthDetector_DetectIntercomTokenFalsePositiveGuard(t *testing.T) {
+	d := &AuthDetector{}
+	got, err := d.Detect("random_string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'", "config.go")
+	if err != nil {
+		t.Fatalf("Detect() error = %v", err)
+	}
+	if len(got) != 0 {
+		t.Fatalf("Detect() returned %d findings, want 0", len(got))
+	}
+}
+
+func TestAuthDetector_DetectProviderOneFindingPerLine(t *testing.T) {
+	d := &AuthDetector{}
+	got, err := d.Detect("intercom_token = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'\nintercom_access_token = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'", "config.go")
+	if err != nil {
+		t.Fatalf("Detect() error = %v", err)
+	}
+	if len(got) != 2 {
+		t.Fatalf("Detect() returned %d findings, want 2", len(got))
+	}
+	if got[0].Line != 1 || got[1].Line != 2 {
+		t.Errorf("Lines = [%d, %d], want [1, 2]", got[0].Line, got[1].Line)
 	}
 }
