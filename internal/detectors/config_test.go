@@ -39,8 +39,19 @@ func TestConfigDetector(t *testing.T) {
 		{"python file", "script.py", "print('hello')", 0},
 		{"shell script", "deploy.sh", "#!/bin/bash\necho deploy", 0},
 		{"gitignore", ".gitignore", "node_modules/", 0},
-		{"env file", ".env", "KEY=value", 0},
-		{"env example", ".env.example", "KEY=value", 0},
+		{"env file", ".env", "KEY=value", 1},
+		{"env example", ".env.example", "KEY=value", 1},
+		{"env local", ".env.local", "KEY=value", 1},
+		{"env production", ".env.production", "KEY=value", 1},
+		{"env development", ".env.development", "KEY=value", 1},
+		{"envrc file", ".envrc", "export KEY=value", 1},
+		{"secure-push config", "secure-push.yaml", "key: value", 1},
+		{"secure-push yml", ".secure-push.yml", "key: value", 1},
+		{"env sample", ".env.sample", "KEY=value", 1},
+		{"envrc uppercase", ".ENVRC", "export KEY=value", 1},
+		{"envrc mixed case", ".Envrc", "export KEY=value", 1},
+		{"config yml uppercase", "CONFIG.YML", "key: value", 1},
+		{"settings json uppercase", "SETTINGS.JSON", `{"key": "value"}`, 1},
 	}
 
 	for _, tt := range tests {
@@ -120,6 +131,11 @@ func TestConfigDetectorEdgeCases(t *testing.T) {
 		{"image file", "logo.png", "binary data", 0},
 		{"archive file", "backup.tar.gz", "archive data", 0},
 		{"compressed file", "data.zip", "compressed data", 0},
+		{"envrc development", ".envrc.development", "export KEY=value", 1},
+		{"envrc test", ".envrc.test", "export KEY=value", 1},
+		{"secure-push yaml uppercase", "SECURE-PUSH.YAML", "key: value", 1},
+		{"secure-push yml uppercase", ".SECURE-PUSH.YML", "key: value", 1},
+		{"config yaml in nested path", "configs/.envrc.local", "export KEY=value", 1},
 	}
 
 	for _, tt := range tests {

@@ -1,0 +1,28 @@
+name: Security Scanner
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Secure Push Scanner
+        uses: secure-push/secure-push-action@v1
+        with:
+          path: '.'
+          output: 'sarif'
+          sarif_file: 'results.sarif'
+
+      - name: Upload SARIF to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'results.sarif'
+          category: 'secure-push'

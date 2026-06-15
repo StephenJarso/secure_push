@@ -1,0 +1,72 @@
+{
+  "name": "secure-push",
+  "displayName": "Secure Push",
+  "description": "Security scanner for your codebase - detects secrets, credentials, and sensitive data",
+  "version": "0.1.0",
+  "publisher": "secure-push",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": ["linters"],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "secure-push.scanWorkspace",
+        "title": "Secure Push: Scan Workspace",
+        "category": "Secure Push"
+      },
+      {
+        "command": "secure-push.scanFile",
+        "title": "Secure Push: Scan File",
+        "category": "Secure Push"
+      }
+    ],
+    "problemMatchers": [
+      {
+        "name": "secure-push",
+        "owner": "secure-push",
+        "fileLocation": "absolute",
+        "pattern": {
+          "regexp": "^\\s*(.*):(\\d+):\\s*(warning|error)\\s*(.*)$",
+          "file": 1,
+          "line": 2,
+          "severity": 3,
+          "message": 4
+        }
+      }
+    ],
+    "taskDefinitions": [
+      {
+        "type": "secure-push",
+        "required": [],
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Path to scan"
+          },
+          "output": {
+            "type": "string",
+            "description": "Output format (console, json, sarif, csv)",
+            "default": "console"
+          }
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/vscode": "^1.80.0",
+    "typescript": "^5.0.0",
+    "vsce": "^2.15.0"
+  }
+}

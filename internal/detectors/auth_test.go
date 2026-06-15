@@ -127,6 +127,42 @@ func TestAuthDetector_Detect(t *testing.T) {
 			content:  "",
 			wantMin:  0,
 		},
+		{
+			name:     "slack token",
+			filename: "config.go",
+			content:  "slack_token = 'xoxb-1234567890-123456789012-ABCDEFGHIJKLMNO'",
+			wantMin:  1,
+		},
+		{
+			name:     "discord webhook",
+			filename: "config.go",
+			content:  "discord_webhook = 'https://discord.com/api/webhooks/123456789012345678/abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'",
+			wantMin:  1,
+		},
+		{
+			name:     "telegram bot token",
+			filename: "config.go",
+			content:  "telegram_token = '1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghiJKLMNO'",
+			wantMin:  1,
+		},
+		{
+			name:     "azure key vault",
+			filename: "azure.key",
+			content:  "-----BEGIN AZURE KEY VAULT-----\nkey-data\n-----END AZURE KEY VAULT-----",
+			wantMin:  1,
+		},
+		{
+			name:     "personal access token",
+			filename: "config.go",
+			content:  "pat = 'abc123def456ghij789klmn.ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJ'",
+			wantMin:  1,
+		},
+		{
+			name:     "multiple slack tokens",
+			filename: "config.go",
+			content:  "token1 = 'xoxb-1234567890-123456789012-ABCDEFGHIJKLMNO'\ntoken2 = 'xoxa-1234567890-123456789012-ABCDEFGHIJKLMNO'",
+			wantMin:  2,
+		},
 	}
 
 	for _, tt := range tests {

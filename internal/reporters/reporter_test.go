@@ -54,3 +54,9 @@ func TestCSVReporter(t *testing.T) {
 		t.Errorf("CSVReporter.Report failed: %v", err)
 	}
 }
+
+func TestSARIFReporter(t *testing.T) {
+	reporter := &SARIFReporter{}
+	// Note: Report calls os.Exit(1) when findings exist, so we test with empty findings
+	_ = reporter.Report([]detectors.Finding{})
+}

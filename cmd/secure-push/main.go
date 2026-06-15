@@ -53,7 +53,7 @@ func printUsage() {
 	fmt.Fprintln(os.Stderr, "  -config string")
 	fmt.Fprintln(os.Stderr, "        Path to configuration file")
 	fmt.Fprintln(os.Stderr, "  -output string")
-	fmt.Fprintln(os.Stderr, "        Output format: console, json, github (default \"console\")")
+	fmt.Fprintln(os.Stderr, "        Output format: console, json, github, sarif, csv (default \"console\")")
 	fmt.Fprintln(os.Stderr, "  -verbose")
 	fmt.Fprintln(os.Stderr, "        Enable verbose logging")
 }
@@ -108,6 +108,8 @@ func runScan(args []string) {
 		reporter = &reporters.JSONReporter{}
 	case "github":
 		reporter = &reporters.GitHubReporter{}
+	case "sarif":
+		reporter = &reporters.SARIFReporter{}
 	case "csv":
 		reporter = reporters.NewCSVReporter("findings.csv")
 	default:

@@ -19,8 +19,8 @@ func (d *EnvDetector) Detect(content string, filename string) ([]Finding, error)
 	base := filepath.Base(filename)
 	lower := strings.ToLower(base)
 
-	// Match .env, .env.local, .env.development, .env.production, .env.test, etc.
-	if strings.HasPrefix(lower, ".env") {
+	// Match .env, .env.local, .env.development, .env.production, .env.test, .envrc, .env.sample, etc.
+	if strings.HasPrefix(lower, ".env") || lower == ".envrc" {
 		return []Finding{{
 			Rule:     d.Name(),
 			Severity: d.Severity(),

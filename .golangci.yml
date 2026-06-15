@@ -64,6 +64,9 @@ linters:
     - unused
     - varcheck
     - whitespace
+    - wsl
+    - wrapcheck
+    - zerologlint
 
 issues:
   exclude-rules:

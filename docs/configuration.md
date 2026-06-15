@@ -112,6 +112,19 @@ disable_detectors:
   - CONFIG_FILE
 ```
 
+### output_format
+
+Output format for scan results.
+
+- `console` - Human-readable console output (default)
+- `json` - JSON format for programmatic processing
+- `csv` - CSV format for spreadsheet import
+- `sarif` - SARIF format for CI/CD integration
+
+```yaml
+output_format: sarif
+```
+
 ## Environment Variables
 
 | Variable | Description | Default |

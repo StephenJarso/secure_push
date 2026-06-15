@@ -32,6 +32,11 @@ func GetFileSize(path string) (int64, error) {
 	return info.Size(), nil
 }
 
+// GetFileInfo returns file info for the given path, reusing stat calls
+func GetFileInfo(path string) (os.FileInfo, error) {
+	return os.Stat(path)
+}
+
 func FileExists(path string) bool {
 	_, err := os.Stat(path)
 	return err == nil

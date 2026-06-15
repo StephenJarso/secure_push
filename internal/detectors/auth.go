@@ -16,22 +16,27 @@ func (d *AuthDetector) Severity() Severity {
 }
 
 var (
-	awsAccessKeyPattern = regexp.MustCompile(`(AKIA|ASIA)[A-Z0-9]{16}`)
-	githubTokenPattern  = regexp.MustCompile(`(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9_]{36,}`)
-	gitlabTokenPattern  = regexp.MustCompile(`(glpat-)[A-Za-z0-9\-_]{20,}`)
-	googleApiKeyPattern = regexp.MustCompile(`AIza[0-9A-Za-z\-_]{35}`)
-	bearerTokenPattern  = regexp.MustCompile(`bearer\s+[A-Za-z0-9\-_\.]+`)
-	basicAuthPattern    = regexp.MustCompile(`basic\s+[A-Za-z0-9+/=]+`)
-	jwtPattern          = regexp.MustCompile(`eyJ[A-Za-z0-9\-_]+\.eyJ[A-Za-z0-9\-_]+\.?[A-Za-z0-9\-_\.\/+=]*`)
-	sshPrivateKeyPattern = regexp.MustCompile(`-----BEGIN\s+(OPENSSH\s+)?PRIVATE\s+KEY-----`)
-	pgpPrivateKeyPattern = regexp.MustCompile(`-----BEGIN\s+PGP\s+PRIVATE\s+KEY\s+BLOCK-----`)
-	facebookTokenPattern = regexp.MustCompile(`EAACEdEose0cBA[0-9A-Za-z]+`)
-	twitterTokenPattern  = regexp.MustCompile(`[1-9][0-9]+-[0-9a-zA-Z]{40}`)
-	herokuApiKeyPattern  = regexp.MustCompile(`[h|H][e|E][r|R][o|O][k|K][u|U].*[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}`)
-	mailgunApiKeyPattern = regexp.MustCompile(`key-[0-9a-zA-Z]{32}`)
-	twilioApiKeyPattern  = regexp.MustCompile(`SK[0-9a-fA-F]{32}`)
-	stripeApiKeyPattern  = regexp.MustCompile(`(sk|pk)_(live|test)_[0-9a-zA-Z]{24,}`)
-	sendgridApiKeyPattern = regexp.MustCompile(`SG\.[0-9A-Za-z\-_]{22}\.[0-9A-Za-z\-_]{43}`)
+	awsAccessKeyPattern        = regexp.MustCompile(`(AKIA|ASIA)[A-Z0-9]{16}`)
+	githubTokenPattern         = regexp.MustCompile(`(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9_]{36,}`)
+	gitlabTokenPattern         = regexp.MustCompile(`(glpat-)[A-Za-z0-9\-_]{20,}`)
+	googleApiKeyPattern        = regexp.MustCompile(`AIza[0-9A-Za-z\-_]{35}`)
+	bearerTokenPattern         = regexp.MustCompile(`bearer\s+[A-Za-z0-9\-_\.]+`)
+	basicAuthPattern           = regexp.MustCompile(`basic\s+[A-Za-z0-9+/=]+`)
+	jwtPattern                 = regexp.MustCompile(`eyJ[A-Za-z0-9\-_]+\.eyJ[A-Za-z0-9\-_]+\.?[A-Za-z0-9\-_\.\/+=]*`)
+	sshPrivateKeyPattern       = regexp.MustCompile(`-----BEGIN\s+(OPENSSH\s+)?PRIVATE\s+KEY-----`)
+	pgpPrivateKeyPattern       = regexp.MustCompile(`-----BEGIN\s+PGP\s+PRIVATE\s+KEY\s+BLOCK-----`)
+	facebookTokenPattern       = regexp.MustCompile(`EAACEdEose0cBA[0-9A-Za-z]+`)
+	twitterTokenPattern        = regexp.MustCompile(`[1-9][0-9]+-[0-9a-zA-Z]{40}`)
+	herokuApiKeyPattern        = regexp.MustCompile(`[h|H][e|E][r|R][o|O][k|K][u|U].*[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}`)
+	mailgunApiKeyPattern       = regexp.MustCompile(`key-[0-9a-zA-Z]{32}`)
+	twilioApiKeyPattern        = regexp.MustCompile(`SK[0-9a-fA-F]{32}`)
+	stripeApiKeyPattern        = regexp.MustCompile(`(sk|pk)_(live|test)_[0-9a-zA-Z]{24,}`)
+	sendgridApiKeyPattern      = regexp.MustCompile(`SG\.[0-9A-Za-z\-_]{22}\.[0-9A-Za-z\-_]{43}`)
+	slackTokenPattern          = regexp.MustCompile(`xox[baprs]-[A-Za-z0-9\-_]{10,}`)
+	discordWebhookPattern      = regexp.MustCompile(`https://discord\.com/api/webhooks/[0-9]+/[A-Za-z0-9\-_]+`)
+	telegramBotTokenPattern    = regexp.MustCompile(`[0-9]{8,10}:[A-Za-z0-9\-_]{35,}`)
+	azureKeyPattern            = regexp.MustCompile(`-----BEGIN AZURE KEY VAULT-----`)
+	personalAccessTokenPattern = regexp.MustCompile(`[A-Za-z0-9\-_]{20,}\.[A-Za-z0-9\-_]{60,}`)
 )
 
 func (d *AuthDetector) Detect(content string, filename string) ([]Finding, error) {
@@ -201,6 +206,56 @@ func (d *AuthDetector) Detect(content string, filename string) ([]Finding, error
 				File:     filename,
 				Line:     lineNum + 1,
 				Message:  "SendGrid API key found",
+			})
+		}
+
+		if slackTokenPattern.MatchString(line) {
+			findings = append(findings, Finding{
+				Rule:     d.Name(),
+				Severity: Critical,
+				File:     filename,
+				Line:     lineNum + 1,
+				Message:  "Slack token found",
+			})
+		}
+
+		if discordWebhookPattern.MatchString(line) {
+			findings = append(findings, Finding{
+				Rule:     d.Name(),
+				Severity: High,
+				File:     filename,
+				Line:     lineNum + 1,
+				Message:  "Discord webhook URL found",
+			})
+		}
+
+		if telegramBotTokenPattern.MatchString(line) {
+			findings = append(findings, Finding{
+				Rule:     d.Name(),
+				Severity: High,
+				File:     filename,
+				Line:     lineNum + 1,
+				Message:  "Telegram bot token found",
+			})
+		}
+
+		if azureKeyPattern.MatchString(line) {
+			findings = append(findings, Finding{
+				Rule:     d.Name(),
+				Severity: Critical,
+				File:     filename,
+				Line:     lineNum + 1,
+				Message:  "Azure Key Vault found",
+			})
+		}
+
+		if personalAccessTokenPattern.MatchString(line) {
+			findings = append(findings, Finding{
+				Rule:     d.Name(),
+				Severity: High,
+				File:     filename,
+				Line:     lineNum + 1,
+				Message:  "Personal access token found",
 			})
 		}
 	}

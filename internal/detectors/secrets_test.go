@@ -121,6 +121,78 @@ func TestSecretsDetector_Detect(t *testing.T) {
 			content:  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
 			wantMin:  0,
 		},
+		{
+			name:     "hardcoded password",
+			filename: "config.go",
+			content:  "passwd = 'mysecretpassword123'",
+			wantMin:  1,
+		},
+		{
+			name:     "connection string",
+			filename: "config.go",
+			content:  "server = 'server=myserver;database=mydb;uid=myuser;pwd=mypass'",
+			wantMin:  1,
+		},
+		{
+			name:     "api key header",
+			filename: "config.go",
+			content:  "headers: { 'x-api-key': 'abcdefghijklmnopqrstuvwxyz1234567890' }",
+			wantMin:  1,
+		},
+		{
+			name:     "auth header",
+			filename: "config.go",
+			content:  "authorization: 'Bearer abcdefghijklmnopqrstuvwxyz1234567890'",
+			wantMin:  1,
+		},
+		{
+			name:     "webhook url",
+			filename: "config.go",
+			content:  "webhook = 'https://example.com/webhook/callback'",
+			wantMin:  1,
+		},
+		{
+			name:     "redis url",
+			filename: "config.go",
+			content:  "redis_url = 'redis://user:password@redis.example.com:6379/0'",
+			wantMin:  1,
+		},
+		{
+			name:     "mssql url",
+			filename: "config.go",
+			content:  "mssql_url = 'mssql://sa:MyP@ssw0rd@localhost:1433/master'",
+			wantMin:  1,
+		},
+		{
+			name:     "oracle url",
+			filename: "config.go",
+			content:  "oracle_url = 'oracle://user:password@oracle.example.com:1521/ORCL'",
+			wantMin:  1,
+		},
+		{
+			name:     "password with double quotes",
+			filename: "config.go",
+			content:  `password = "super_secret_pass123"`,
+			wantMin:  1,
+		},
+		{
+			name:     "password without quotes",
+			filename: "config.go",
+			content:  "password = super_secret_pass123",
+			wantMin:  1,
+		},
+		{
+			name:     "pwd with double quotes",
+			filename: "config.go",
+			content:  `pwd = "mysecretpassword123"`,
+			wantMin:  1,
+		},
+		{
+			name:     "passwd with double quotes",
+			filename: "config.go",
+			content:  `passwd = "mysecretpassword123"`,
+			wantMin:  1,
+		},
 	}
 
 	for _, tt := range tests {

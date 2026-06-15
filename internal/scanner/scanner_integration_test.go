@@ -175,8 +175,9 @@ func TestIntegrationScanWithMultipleDetectors(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	if len(findings) != 3 {
-		t.Errorf("Expected 3 findings, got %d", len(findings))
+	// 4 findings: .env (ENV_FILE + CONFIG_FILE), config.go (SECRETS), config.yaml (CONFIG_FILE)
+	if len(findings) != 4 {
+		t.Errorf("Expected 4 findings, got %d", len(findings))
 	}
 }
 
