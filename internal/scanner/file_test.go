@@ -128,6 +128,27 @@ func TestIsTextFile(t *testing.T) {
 	})
 }
 
+func TestIsTextFileWithBinaryFile(t *testing.T) {
+	tmpFile, err := os.CreateTemp("", "binary-*.bin")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(tmpFile.Name())
+
+	if _, err := tmpFile.Write([]byte{0x00, 0x01, 0x02}); err != nil {
+		t.Fatal(err)
+	}
+	tmpFile.Close()
+
+	isText, err := IsTextFile(tmpFile.Name())
+	if err != nil {
+		t.Fatalf("IsTextFile() error = %v", err)
+	}
+	if isText {
+		t.Error("IsTextFile() = true, want false for binary file")
+	}
+}
+
 func TestIsBinaryFileWithSmallFile(t *testing.T) {
 	// Test that files smaller than 512 bytes are handled correctly
 	tmpFile, err := os.CreateTemp("", "small-*.txt")
