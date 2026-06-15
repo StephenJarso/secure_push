@@ -207,3 +207,38 @@ func TestIsBinaryFileInSubdir(t *testing.T) {
 		t.Error("IsBinaryFile() = true, want false for text file in subdir")
 	}
 }
+
+func BenchmarkIsBinary(b *testing.B) {
+	textData := make([]byte, 512)
+	for i := range textData {
+		textData[i] = 'a'
+	}
+
+	binaryData := make([]byte, 512)
+	for i := range binaryData {
+		binaryData[i] = byte(i % 256)
+	}
+	binaryData[100] = 0 // Add null byte
+
+	b.Run("text data", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			IsBinary(textData)
+		}
+	})
+
+	b.Run("binary data", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			IsBinary(binaryData)
+		}
+	})
+}
+
+func BenchmarkBufferPool(b *testing.B) {
+	b.Run("get and put", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			bufPtr := bufferPool.Get().(*[]byte)
+			_ = (*bufPtr)[0]
+			bufferPool.Put(bufPtr)
+		}
+	})
+}
