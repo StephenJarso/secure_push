@@ -1,0 +1,77 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        goarch: [amd64, arm64]
+        goos: [linux, darwin, windows]
+        exclude:
+          - goos: windows
+            goarch: arm64
+          - goos: darwin
+            goarch: arm64
+            os: ubuntu-latest
+          - goos: linux
+            goarch: arm64
+            os: macos-latest
+          - goos: darwin
+            goarch: amd64
+            os: ubuntu-latest
+          - goos: linux
+            goarch: amd64
+            os: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+          with-cache: true
+
+      - name: Build
+        run: |
+          EXT=''
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            EXT='.exe'
+          fi
+          go build -o secure-push${EXT} ./cmd/secure-push
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: secure-push-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: secure-push${{ matrix.goos === 'windows' && '.exe' || '' }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/secure-push-linux-amd64/secure-push
+            artifacts/secure-push-darwin-amd64/secure-push
+            artifacts/secure-push-windows-amd64/secure-push.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
