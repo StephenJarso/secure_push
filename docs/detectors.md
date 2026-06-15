@@ -18,12 +18,43 @@ type Detector interface {
 
 | Detector | Severity | Description |
 |----------|----------|-------------|
-| ENV_FILE | CRITICAL | Detects committed `.env` files |
+| ENV_FILE | CRITICAL | Detects committed `.env` files and `.envrc` files |
 | AWS_SECRET_KEY | CRITICAL | Detects AWS secret keys |
 | GENERIC_API_KEY | HIGH | Detects generic API keys |
 | HARDCODED_PASSWORD | CRITICAL | Detects hardcoded passwords |
 | AUTH_CREDENTIALS | CRITICAL | Detects various auth credentials (GitHub tokens, SSH keys, etc.) |
 | CONFIG_FILE | HIGH | Detects config files that may contain sensitive data |
+
+### Auth Credentials Detector
+
+The `AUTH_CREDENTIALS` detector identifies various authentication tokens and credentials:
+
+- **AWS Access Keys**: `AKIAIOSFODNN7EXAMPLE`
+- **GitHub Tokens**: `ghp_...`, `gho_...`, `ghu_...`, `ghs_...`, `ghr_...`
+- **GitLab Tokens**: `glpat-...`
+- **Google API Keys**: `AIza...`
+- **Slack Tokens**: `xoxb-...`, `xoxa-...`, `xoxp-...`, `xoxr-...`, `xoxs-...`
+- **Discord Webhooks**: `https://discord.com/api/webhooks/...`
+- **Telegram Bot Tokens**: `1234567890:...`
+- **Azure Key Vault**: `-----BEGIN AZURE KEY VAULT-----`
+- **Personal Access Tokens**: Various formats
+- **SSH/PGP Keys**: Private key headers
+- **JWT Tokens**: JSON Web Tokens
+- **Bearer Tokens**: Authorization headers
+- **Basic Auth**: Base64 encoded credentials
+
+### Secrets Detector
+
+The `SECRETS` detector identifies:
+
+- **Passwords**: `password = '...'`, `passwd = '...'`, `pwd = '...'`
+- **API Keys**: `api_key = '...'`, `apikey = '...'`
+- **Tokens**: `token = '...'`, `access_token = '...'`
+- **Secrets**: `secret = '...'`, `client_secret = '...'`
+- **Database URLs**: `postgres://...`, `mysql://...`, `mongodb://...`, `redis://...`, `mssql://...`, `oracle://...`
+- **Connection Strings**: `server = '...'`, `data source = '...'`
+- **High Entropy Strings**: Base64-like strings that may be secrets
+- **Webhooks**: `webhook = 'https://...'`
 
 ## Creating a Custom Detector
 
