@@ -37,13 +37,26 @@ var (
 	telegramBotTokenPattern    = regexp.MustCompile(`[0-9]{8,10}:[A-Za-z0-9\-_]{35,}`)
 	azureKeyPattern            = regexp.MustCompile(`-----BEGIN AZURE KEY VAULT-----`)
 	personalAccessTokenPattern = regexp.MustCompile(`[A-Za-z0-9\-_]{20,}\.[A-Za-z0-9\-_]{60,}`)
-	// New patterns
-	figmaTokenPattern    = regexp.MustCompile(`figd_[A-Za-z0-9]{60,}`)
-	notionTokenPattern   = regexp.MustCompile(`secret_[A-Za-z0-9]{43}`)
-	linearTokenPattern   = regexp.MustCompile(`lin_api_[A-Za-z0-9]{64}`)
-	intercomTokenPattern = regexp.MustCompile(`[A-Za-z0-9]{40,}`)
-	auth0TokenPattern    = regexp.MustCompile(`[A-Za-z0-9\-_]{80,}\.[A-Za-z0-9\-_]{32,}`)
+	figmaTokenPattern          = regexp.MustCompile(`figd_[A-Za-z0-9]{60,}`)
+	notionTokenPattern         = regexp.MustCompile(`secret_[A-Za-z0-9]{43}`)
+	linearTokenPattern         = regexp.MustCompile(`lin_api_[A-Za-z0-9]{64}`)
+	intercomTokenPattern       = regexp.MustCompile(`[A-Za-z0-9]{40,}`)
+	auth0TokenPattern          = regexp.MustCompile(`[A-Za-z0-9\-_]{80,}\.[A-Za-z0-9\-_]{32,}`)
 )
+
+type authRule struct {
+	pattern  *regexp.Regexp
+	message  string
+	severity Severity
+}
+
+var providerAuthRules = []authRule{
+	{pattern: figmaTokenPattern, message: "Figma token found", severity: High},
+	{pattern: notionTokenPattern, message: "Notion token found", severity: High},
+	{pattern: linearTokenPattern, message: "Linear API token found", severity: High},
+	{pattern: auth0TokenPattern, message: "Auth0 token found", severity: High},
+	{pattern: intercomTokenPattern, message: "Intercom token found", severity: High},
+}
 
 func (d *AuthDetector) Detect(content string, filename string) ([]Finding, error) {
 	var findings []Finding
@@ -265,54 +278,16 @@ func (d *AuthDetector) Detect(content string, filename string) ([]Finding, error
 			})
 		}
 
-		if figmaTokenPattern.MatchString(line) {
-			findings = append(findings, Finding{
-				Rule:     d.Name(),
-				Severity: High,
-				File:     filename,
-				Line:     lineNum + 1,
-				Message:  "Figma token found",
-			})
-		}
-
-		if notionTokenPattern.MatchString(line) {
-			findings = append(findings, Finding{
-				Rule:     d.Name(),
-				Severity: High,
-				File:     filename,
-				Line:     lineNum + 1,
-				Message:  "Notion token found",
-			})
-		}
-
-		if linearTokenPattern.MatchString(line) {
-			findings = append(findings, Finding{
-				Rule:     d.Name(),
-				Severity: High,
-				File:     filename,
-				Line:     lineNum + 1,
-				Message:  "Linear API token found",
-			})
-		}
-
-		if auth0TokenPattern.MatchString(line) {
-			findings = append(findings, Finding{
-				Rule:     d.Name(),
-				Severity: High,
-				File:     filename,
-				Line:     lineNum + 1,
-				Message:  "Auth0 token found",
-			})
-		}
-
-		if intercomTokenPattern.MatchString(line) {
-			findings = append(findings, Finding{
-				Rule:     d.Name(),
-				Severity: High,
-				File:     filename,
-				Line:     lineNum + 1,
-				Message:  "Intercom token found",
-			})
+		for _, rule := range providerAuthRules {
+			if rule.pattern.MatchString(line) {
+				findings = append(findings, Finding{
+					Rule:     d.Name(),
+					Severity: rule.severity,
+					File:     filename,
+					Line:     lineNum + 1,
+					Message:  rule.message,
+				})
+			}
 		}
 	}
 
