@@ -47,7 +47,11 @@ func TestConfigDetector(t *testing.T) {
 		{"envrc file", ".envrc", "export KEY=value", 1},
 		{"secure-push config", "secure-push.yaml", "key: value", 1},
 		{"secure-push yml", ".secure-push.yml", "key: value", 1},
-		{"config yaml", "config.yaml", "key: value", 1},
+		{"env sample", ".env.sample", "KEY=value", 1},
+		{"envrc uppercase", ".ENVRC", "export KEY=value", 1},
+		{"envrc mixed case", ".Envrc", "export KEY=value", 1},
+		{"config yml uppercase", "CONFIG.YML", "key: value", 1},
+		{"settings json uppercase", "SETTINGS.JSON", `{"key": "value"}`, 1},
 	}
 
 	for _, tt := range tests {
