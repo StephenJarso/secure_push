@@ -3,7 +3,16 @@ package scanner
 import (
 	"os"
 	"path/filepath"
+	"sync"
 )
+
+// bufferPool reduces memory allocations for binary file detection
+var bufferPool = sync.Pool{
+	New: func() interface{} {
+		buf := make([]byte, 512)
+		return &buf
+	},
+}
 
 func IsBinaryFile(path string) (bool, error) {
 	file, err := os.Open(path)
@@ -12,7 +21,10 @@ func IsBinaryFile(path string) (bool, error) {
 	}
 	defer file.Close()
 
-	buffer := make([]byte, 512)
+	bufPtr := bufferPool.Get().(*[]byte)
+	defer bufferPool.Put(bufPtr)
+	buffer := *bufPtr
+
 	n, err := file.Read(buffer)
 	if err != nil && err.Error() != "EOF" {
 		return false, err
