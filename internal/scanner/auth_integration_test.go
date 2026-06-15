@@ -96,3 +96,24 @@ func TestIntegrationScanFileRejectsIgnoredFile(t *testing.T) {
 		t.Fatal("ScanFile() error = nil, want ignored file error")
 	}
 }
+
+func TestIntegrationScanWithDisabledAuthDetector(t *testing.T) {
+	tmpDir := t.TempDir()
+	configFile := filepath.Join(tmpDir, "config.go")
+	err := os.WriteFile(configFile, []byte("intercom_token = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'\n"), 0o644)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	cfg := &config.Config{
+		DisableDetectors: []string{"AUTH_CREDENTIALS"},
+	}
+	scanner := New([]detectors.Detector{&detectors.AuthDetector{}}, cfg, logger.New(logger.Debug))
+	findings, err := scanner.Scan(tmpDir)
+	if err != nil {
+		t.Fatalf("Scan() error = %v", err)
+	}
+	if len(findings) != 0 {
+		t.Fatalf("Scan() returned %d findings, want 0", len(findings))
+	}
+}
