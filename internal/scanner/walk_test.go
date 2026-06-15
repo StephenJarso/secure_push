@@ -35,6 +35,30 @@ func TestWalkDir(t *testing.T) {
 	}
 }
 
+func TestWalkDirSkipsHiddenDirectory(t *testing.T) {
+	tmpDir := t.TempDir()
+	hiddenDir := filepath.Join(tmpDir, ".hidden")
+	if err := os.MkdirAll(hiddenDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	hiddenFile := filepath.Join(hiddenDir, "secret.txt")
+	if err := os.WriteFile(hiddenFile, []byte("secret"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	var visited []string
+	err := WalkDir(tmpDir, func(path string, info os.FileInfo) error {
+		visited = append(visited, filepath.Base(path))
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("WalkDir() error = %v", err)
+	}
+	if len(visited) != 0 {
+		t.Errorf("WalkDir() visited %d files, want 0", len(visited))
+	}
+}
+
 func TestGetFileSize(t *testing.T) {
 	tmpFile, err := os.CreateTemp("", "test-*.txt")
 	if err != nil {
