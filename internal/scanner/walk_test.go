@@ -132,6 +132,13 @@ func TestGetRelativePath(t *testing.T) {
 	}
 }
 
+func TestGetRelativePathError(t *testing.T) {
+	_, err := GetRelativePath("/tmp/secure-push-a", "/tmp/secure-push-b")
+	if err == nil {
+		t.Fatal("GetRelativePath() error = nil, want error")
+	}
+}
+
 func TestValidatePath(t *testing.T) {
 	t.Run("empty path", func(t *testing.T) {
 		err := ValidatePath("")
