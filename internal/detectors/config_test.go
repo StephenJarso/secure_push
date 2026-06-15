@@ -39,8 +39,15 @@ func TestConfigDetector(t *testing.T) {
 		{"python file", "script.py", "print('hello')", 0},
 		{"shell script", "deploy.sh", "#!/bin/bash\necho deploy", 0},
 		{"gitignore", ".gitignore", "node_modules/", 0},
-		{"env file", ".env", "KEY=value", 0},
-		{"env example", ".env.example", "KEY=value", 0},
+		{"env file", ".env", "KEY=value", 1},
+		{"env example", ".env.example", "KEY=value", 1},
+		{"env local", ".env.local", "KEY=value", 1},
+		{"env production", ".env.production", "KEY=value", 1},
+		{"env development", ".env.development", "KEY=value", 1},
+		{"envrc file", ".envrc", "export KEY=value", 1},
+		{"secure-push config", "secure-push.yaml", "key: value", 1},
+		{"secure-push yml", ".secure-push.yml", "key: value", 1},
+		{"config yaml", "config.yaml", "key: value", 1},
 	}
 
 	for _, tt := range tests {
