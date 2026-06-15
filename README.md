@@ -138,6 +138,7 @@ allowlist:
 |---------------------------|-----------|---------------------|
 | AWS Keys                  | CRITICAL  | Low                 |
 | GitHub Tokens             | CRITICAL  | Low                 |
+| Provider Access Tokens    | HIGH      | Low                 |
 | `.env` Files              | CRITICAL  | None                |
 | Generic API Keys          | HIGH      | Medium              |
 | Private SSH Keys          | CRITICAL  | Low                 |
