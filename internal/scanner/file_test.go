@@ -263,3 +263,15 @@ func BenchmarkBufferPool(b *testing.B) {
 		}
 	})
 }
+
+func BenchmarkTextClassification(b *testing.B) {
+	textData := make([]byte, 512)
+	for i := range textData {
+		textData[i] = 'a'
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = IsBinary(textData)
+	}
+}
