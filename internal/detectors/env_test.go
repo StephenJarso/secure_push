@@ -157,6 +157,13 @@ func TestEnvDetector_Detect(t *testing.T) {
 			wantMsg:  ".env file should not be committed",
 		},
 		{
+			name:     "envrc mixed case",
+			filename: ".Envrc",
+			content:  "export KEY=value",
+			wantLen:  1,
+			wantMsg:  ".env file should not be committed",
+		},
+		{
 			name:     "envrc uppercase",
 			filename: ".ENVRC",
 			content:  "export KEY=value",
@@ -174,6 +181,13 @@ func TestEnvDetector_Detect(t *testing.T) {
 			name:     "env sample file",
 			filename: ".env.sample",
 			content:  "KEY=value",
+			wantLen:  1,
+			wantMsg:  ".env file should not be committed",
+		},
+		{
+			name:     "envrc production",
+			filename: ".envrc.production",
+			content:  "export KEY=value",
 			wantLen:  1,
 			wantMsg:  ".env file should not be committed",
 		},
