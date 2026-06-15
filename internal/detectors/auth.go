@@ -40,7 +40,7 @@ var (
 	figmaTokenPattern          = regexp.MustCompile(`figd_[A-Za-z0-9]{60,}`)
 	notionTokenPattern         = regexp.MustCompile(`secret_[A-Za-z0-9]{43}`)
 	linearTokenPattern         = regexp.MustCompile(`lin_api_[A-Za-z0-9]{64}`)
-	intercomTokenPattern       = regexp.MustCompile(`[A-Za-z0-9]{40,}`)
+	intercomTokenPattern       = regexp.MustCompile(`(?i)(intercom(?:_|[-[:space:]])?(?:access[_-]?)?token|access[_-]?token)\s*[:=]\s*['"]?[A-Za-z0-9]{40,}['"]?`)
 	auth0TokenPattern          = regexp.MustCompile(`[A-Za-z0-9\-_]{80,}\.[A-Za-z0-9\-_]{32,}`)
 )
 
