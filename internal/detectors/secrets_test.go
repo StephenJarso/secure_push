@@ -121,6 +121,36 @@ func TestSecretsDetector_Detect(t *testing.T) {
 			content:  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
 			wantMin:  0,
 		},
+		{
+			name:     "hardcoded password",
+			filename: "config.go",
+			content:  "passwd = 'mysecretpassword123'",
+			wantMin:  1,
+		},
+		{
+			name:     "connection string",
+			filename: "config.go",
+			content:  "server = 'server=myserver;database=mydb;uid=myuser;pwd=mypass'",
+			wantMin:  1,
+		},
+		{
+			name:     "api key header",
+			filename: "config.go",
+			content:  "headers: { 'x-api-key': 'abcdefghijklmnopqrstuvwxyz1234567890' }",
+			wantMin:  1,
+		},
+		{
+			name:     "auth header",
+			filename: "config.go",
+			content:  "authorization: 'Bearer abcdefghijklmnopqrstuvwxyz1234567890'",
+			wantMin:  1,
+		},
+		{
+			name:     "webhook url",
+			filename: "config.go",
+			content:  "webhook = 'https://example.com/webhook/callback'",
+			wantMin:  1,
+		},
 	}
 
 	for _, tt := range tests {

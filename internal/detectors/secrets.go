@@ -16,15 +16,20 @@ func (d *SecretsDetector) Severity() Severity {
 }
 
 var (
-	passwordPattern = regexp.MustCompile(`(?i)(password|passwd|pwd)\s*[:=]\s*['"]?([^\s'"]{8,})['"]?`)
-	apiKeyPattern   = regexp.MustCompile(`(?i)(api[_-]?key|apikey)\s*[:=]\s*['"]?([a-zA-Z0-9\-_]{20,})['"]?`)
-	tokenPattern    = regexp.MustCompile(`(?i)(token|access[_-]?token|auth[_-]?token)\s*[:=]\s*['"]?([a-zA-Z0-9\-_\.]{20,})['"]?`)
-	secretPattern   = regexp.MustCompile(`(?i)(secret|client[_-]?secret)\s*[:=]\s*['"]?([a-zA-Z0-9\-_]{16,})['"]?`)
-	privateKeyPattern = regexp.MustCompile(`-----BEGIN\s+(RSA\s+)?PRIVATE\s+KEY-----`)
-	dbURLPattern   = regexp.MustCompile(`(?i)(mysql|postgres|postgresql|mongodb|redis|mssql|oracle)://[^\s:]+:[^\s@]+@[^\s/]+`)
-	oauthPattern   = regexp.MustCompile(`(?i)(oauth|client[_-]?id)\s*[:=]\s*['"]?([a-zA-Z0-9\-_]{20,})['"]?`)
-	awsKeyPattern  = regexp.MustCompile(`(AKIA|ASIA)[A-Z0-9]{16}`)
-	highEntropyPattern = regexp.MustCompile(`['"]([A-Za-z0-9+/]{32,}={0,2})['"]`)
+	passwordPattern          = regexp.MustCompile(`(?i)(password|passwd|pwd)\s*[:=]\s*['"]?([^\s'"]{8,})['"]?`)
+	apiKeyPattern            = regexp.MustCompile(`(?i)(api[_-]?key|apikey)\s*[:=]\s*['"]?([a-zA-Z0-9\-_]{20,})['"]?`)
+	tokenPattern             = regexp.MustCompile(`(?i)(token|access[_-]?token|auth[_-]?token)\s*[:=]\s*['"]?([a-zA-Z0-9\-_\.]{20,})['"]?`)
+	secretPattern            = regexp.MustCompile(`(?i)(secret|client[_-]?secret)\s*[:=]\s*['"]?([a-zA-Z0-9\-_]{16,})['"]?`)
+	privateKeyPattern        = regexp.MustCompile(`-----BEGIN\s+(RSA\s+)?PRIVATE\s+KEY-----`)
+	dbURLPattern             = regexp.MustCompile(`(?i)(mysql|postgres|postgresql|mongodb|redis|mssql|oracle)://[^\s:]+:[^\s@]+@[^\s/]+`)
+	oauthPattern             = regexp.MustCompile(`(?i)(oauth|client[_-]?id)\s*[:=]\s*['"]?([a-zA-Z0-9\-_]{20,})['"]?`)
+	awsKeyPattern            = regexp.MustCompile(`(AKIA|ASIA)[A-Z0-9]{16}`)
+	highEntropyPattern       = regexp.MustCompile(`['"]([A-Za-z0-9+/]{32,}={0,2})['"]`)
+	hardcodedPasswordPattern = regexp.MustCompile(`(?i)(passwd|pwd|password)\s*=\s*['"]?[^'"\s]{8,}['"]?`)
+	connectionStringPattern  = regexp.MustCompile(`(?i)(server|data\s*source|connection\s*string)\s*=\s*['"][^'"\s]+['"]`)
+	apiKeyHeaderPattern      = regexp.MustCompile(`(?i)x-api-key['"]?\s*:\s*['"]?([a-zA-Z0-9\-_]{20,})['"]?`)
+	authHeaderPattern        = regexp.MustCompile(`(?i)authorization['"]?\s*:\s*['"]?([a-zA-Z0-9\-_\.]+)['"]?`)
+	webhookPattern           = regexp.MustCompile(`(?i)(webhook|callback)\s*[:=]\s*['"]?https?://[^'"\s]+['"]?`)
 )
 
 func (d *SecretsDetector) Detect(content string, filename string) ([]Finding, error) {
@@ -127,6 +132,56 @@ func (d *SecretsDetector) Detect(content string, filename string) ([]Finding, er
 					Message:  "Possible high-entropy secret found",
 				})
 			}
+		}
+
+		if hardcodedPasswordPattern.MatchString(line) {
+			findings = append(findings, Finding{
+				Rule:     d.Name(),
+				Severity: High,
+				File:     filename,
+				Line:     lineNum + 1,
+				Message:  "Hardcoded password found",
+			})
+		}
+
+		if connectionStringPattern.MatchString(line) {
+			findings = append(findings, Finding{
+				Rule:     d.Name(),
+				Severity: High,
+				File:     filename,
+				Line:     lineNum + 1,
+				Message:  "Connection string with credentials found",
+			})
+		}
+
+		if apiKeyHeaderPattern.MatchString(line) {
+			findings = append(findings, Finding{
+				Rule:     d.Name(),
+				Severity: Critical,
+				File:     filename,
+				Line:     lineNum + 1,
+				Message:  "API key in header found",
+			})
+		}
+
+		if authHeaderPattern.MatchString(line) {
+			findings = append(findings, Finding{
+				Rule:     d.Name(),
+				Severity: High,
+				File:     filename,
+				Line:     lineNum + 1,
+				Message:  "Authorization header found",
+			})
+		}
+
+		if webhookPattern.MatchString(line) {
+			findings = append(findings, Finding{
+				Rule:     d.Name(),
+				Severity: High,
+				File:     filename,
+				Line:     lineNum + 1,
+				Message:  "Webhook URL found",
+			})
 		}
 	}
 
