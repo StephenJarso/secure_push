@@ -145,3 +145,30 @@ func TestValidatePath(t *testing.T) {
 		}
 	})
 }
+
+func TestGetFileInfo(t *testing.T) {
+	t.Run("existing file", func(t *testing.T) {
+		tmpFile, err := os.CreateTemp("", "test-*.txt")
+		if err != nil {
+			t.Fatal(err)
+		}
+		tmpFile.Close()
+		defer os.Remove(tmpFile.Name())
+
+		info, err := GetFileInfo(tmpFile.Name())
+		if err != nil {
+			t.Fatalf("GetFileInfo() error = %v", err)
+		}
+
+		if info == nil {
+			t.Error("GetFileInfo() returned nil info")
+		}
+	})
+
+	t.Run("nonexistent file", func(t *testing.T) {
+		_, err := GetFileInfo("/nonexistent/file.txt")
+		if err == nil {
+			t.Error("GetFileInfo() should return error for nonexistent file")
+		}
+	})
+}
