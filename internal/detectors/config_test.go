@@ -131,6 +131,11 @@ func TestConfigDetectorEdgeCases(t *testing.T) {
 		{"image file", "logo.png", "binary data", 0},
 		{"archive file", "backup.tar.gz", "archive data", 0},
 		{"compressed file", "data.zip", "compressed data", 0},
+		{"envrc development", ".envrc.development", "export KEY=value", 1},
+		{"envrc test", ".envrc.test", "export KEY=value", 1},
+		{"secure-push yaml uppercase", "SECURE-PUSH.YAML", "key: value", 1},
+		{"secure-push yml uppercase", ".SECURE-PUSH.YML", "key: value", 1},
+		{"config yaml in nested path", "configs/.envrc.local", "export KEY=value", 1},
 	}
 
 	for _, tt := range tests {
