@@ -278,8 +278,12 @@ func (d *AuthDetector) Detect(content string, filename string) ([]Finding, error
 			})
 		}
 
+		seenProviderFindings := make(map[string]struct{}, len(providerAuthRules))
 		for _, rule := range providerAuthRules {
 			if rule.pattern.MatchString(line) {
+				if _, seen := seenProviderFindings[rule.message]; seen {
+					continue
+				}
 				findings = append(findings, Finding{
 					Rule:     d.Name(),
 					Severity: rule.severity,
@@ -287,6 +291,7 @@ func (d *AuthDetector) Detect(content string, filename string) ([]Finding, error
 					Line:     lineNum + 1,
 					Message:  rule.message,
 				})
+				seenProviderFindings[rule.message] = struct{}{}
 			}
 		}
 	}
