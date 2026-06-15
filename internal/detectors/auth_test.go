@@ -130,7 +130,7 @@ func TestAuthDetector_Detect(t *testing.T) {
 		{
 			name:     "slack token",
 			filename: "config.go",
-			content:  "slack_token = 'xoxb-1234567890-123456789012-ABCDEFGHIJKLMNO'",
+			content:  "slack_token = 'xoxb-test0000000-test00000000000-TESTTESTTEST'",
 			wantMin:  1,
 		},
 		{
@@ -160,8 +160,14 @@ func TestAuthDetector_Detect(t *testing.T) {
 		{
 			name:     "multiple slack tokens",
 			filename: "config.go",
-			content:  "token1 = 'xoxb-1234567890-123456789012-ABCDEFGHIJKLMNO'\ntoken2 = 'xoxa-1234567890-123456789012-ABCDEFGHIJKLMNO'",
+			content:  "token1 = 'xoxb-test0000000-test00000000000-TESTTESTTEST'\ntoken2 = 'xoxa-test0000000-test00000000000-TESTTESTTEST'",
 			wantMin:  2,
+		},
+		{
+			name:     "intercom token",
+			filename: "config.go",
+			content:  "intercom_token = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'",
+			wantMin:  1,
 		},
 	}
 
