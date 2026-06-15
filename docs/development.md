@@ -56,6 +56,8 @@ make lint
 4. Register the detector in `internal/scanner/scanner.go`
 5. Update README.md with the new detector
 
+Detector tests should include positive matches, negative matches, line number assertions, and false-positive guards for broad patterns.
+
 ## Adding a New Reporter
 
 1. Create a new file in `internal/reporters/`
