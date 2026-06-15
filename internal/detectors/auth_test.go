@@ -157,6 +157,12 @@ func TestAuthDetector_Detect(t *testing.T) {
 			content:  "pat = 'abc123def456ghij789klmn.ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJ'",
 			wantMin:  1,
 		},
+		{
+			name:     "multiple slack tokens",
+			filename: "config.go",
+			content:  "token1 = 'xoxb-1234567890-123456789012-ABCDEFGHIJKLMNO'\ntoken2 = 'xoxa-1234567890-123456789012-ABCDEFGHIJKLMNO'",
+			wantMin:  2,
+		},
 	}
 
 	for _, tt := range tests {
