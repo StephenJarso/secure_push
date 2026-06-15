@@ -164,6 +164,30 @@ func TestAuthDetector_Detect(t *testing.T) {
 			wantMin:  2,
 		},
 		{
+			name:     "figma token",
+			filename: "config.go",
+			content:  "figma_token = 'figd_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGH'",
+			wantMin:  1,
+		},
+		{
+			name:     "notion token",
+			filename: "config.go",
+			content:  "notion_token = 'secret_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrs'",
+			wantMin:  1,
+		},
+		{
+			name:     "linear api token",
+			filename: "config.go",
+			content:  "linear_api_token = 'lin_api_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGH'",
+			wantMin:  1,
+		},
+		{
+			name:     "auth0 token",
+			filename: "config.go",
+			content:  "auth0_token = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJ.ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijkl'",
+			wantMin:  1,
+		},
+		{
 			name:     "intercom token",
 			filename: "config.go",
 			content:  "intercom_token = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'",
