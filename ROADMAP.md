@@ -2,18 +2,18 @@
 
 ## v0.2.0 - Enhanced Detection (Next)
 
-- [ ] Add AWS secret key detector
-- [ ] Add GitHub token detector
-- [ ] Add generic API key detector with regex patterns
-- [ ] Add hardcoded password detector
-- [ ] Add configuration file support (.secure-push.yaml)
-- [ ] Add ignore rules and allowlist support
+- [x] Add AWS secret key detector
+- [x] Add GitHub token detector
+- [x] Add generic API key detector with regex patterns
+- [x] Add hardcoded password detector
+- [x] Add configuration file support (.secure-push.yaml)
+- [x] Add ignore rules and allowlist support
 
 ## v0.3.0 - Reporting & CI
 
-- [ ] Add JSON reporter for CI/CD
+- [x] Add JSON reporter for CI/CD
 - [ ] Add GitHub Actions annotation reporter
-- [ ] Add SARIF output format
+- [x] Add SARIF output format
 - [ ] Add exit code configuration
 - [ ] Add summary statistics
 
@@ -27,11 +27,11 @@
 ## v1.0.0 - Production Ready
 
 - [ ] Full test coverage (>80%)
-- [ ] Performance benchmarks
-- [ ] Complete documentation
-- [ ] Homebrew tap
-- [ ] Docker image
-- [ ] VS Code extension
+- [x] Performance benchmarks
+- [x] Complete documentation
+- [x] Homebrew tap
+- [x] Docker image
+- [x] VS Code extension
 
 ## v2.0.0 - AI-Specific Features
 
