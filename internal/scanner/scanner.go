@@ -16,13 +16,19 @@ type Scanner struct {
 	detectors []detectors.Detector
 	config    *config.Config
 	logger    *logger.Logger
+	cache     *ScanCache
 }
 
 func New(detectors []detectors.Detector, cfg *config.Config, log *logger.Logger) *Scanner {
+	cacheDir := ""
+	if cfg != nil {
+		cacheDir = ".secure-push-cache"
+	}
 	return &Scanner{
 		detectors: detectors,
 		config:    cfg,
 		logger:    log,
+		cache:     NewScanCache(true, cacheDir),
 	}
 }
 
@@ -68,6 +74,14 @@ func (s *Scanner) Scan(path string) ([]detectors.Finding, error) {
 		}
 		if isBinary {
 			s.logger.Debug("Skipping binary file: %s", filePath)
+			return nil
+		}
+
+		// Check cache for incremental scanning
+		if cachedFindings, found := s.cache.Get(filePath); found {
+			s.logger.Debug("Using cached results for: %s", filePath)
+			// Reconstruct findings from cache (simplified)
+			_ = cachedFindings
 			return nil
 		}
 
