@@ -12,7 +12,7 @@
 ## v0.3.0 - Reporting & CI
 
 - [x] Add JSON reporter for CI/CD
-- [ ] Add GitHub Actions annotation reporter
+- [x] Add GitHub Actions annotation reporter
 - [x] Add SARIF output format
 - [ ] Add exit code configuration
 - [ ] Add summary statistics
