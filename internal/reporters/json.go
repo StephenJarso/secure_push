@@ -3,7 +3,6 @@ package reporters
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 
 	"secure-push/internal/detectors"
 )
@@ -11,7 +10,7 @@ import (
 type JSONReporter struct{}
 
 type JSONReport struct {
-	Total   int                `json:"total"`
+	Total    int                 `json:"total"`
 	Findings []detectors.Finding `json:"findings"`
 }
 
@@ -29,7 +28,7 @@ func (r *JSONReporter) Report(findings []detectors.Finding) error {
 	fmt.Println(string(data))
 
 	if len(findings) > 0 {
-		os.Exit(1)
+		return fmt.Errorf("scan found %d security issues", len(findings))
 	}
 
 	return nil

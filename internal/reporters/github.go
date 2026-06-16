@@ -2,14 +2,15 @@ package reporters
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"secure-push/internal/detectors"
 )
 
+// GitHubReporter outputs findings in GitHub Actions annotation format
 type GitHubReporter struct{}
 
+// Report outputs findings as GitHub Actions workflow commands
 func (r *GitHubReporter) Report(findings []detectors.Finding) error {
 	if len(findings) == 0 {
 		fmt.Println("::notice::No sensitive data found")
@@ -17,26 +18,32 @@ func (r *GitHubReporter) Report(findings []detectors.Finding) error {
 	}
 
 	for _, f := range findings {
-		severity := strings.ToUpper(string(f.Severity))
-		switch f.Severity {
-		case detectors.Critical:
-			fmt.Printf("::error file=%s,line=%d,title=%s [%s]::%s\n",
-				f.File, f.Line, f.Rule, severity, f.Message)
-		case detectors.High:
-			fmt.Printf("::error file=%s,line=%d,title=%s [%s]::%s\n",
-				f.File, f.Line, f.Rule, severity, f.Message)
-		case detectors.Medium:
-			fmt.Printf("::warning file=%s,line=%d,title=%s [%s]::%s\n",
-				f.File, f.Line, f.Rule, severity, f.Message)
-		case detectors.Low:
-			fmt.Printf("::notice file=%s,line=%d,title=%s [%s]::%s\n",
-				f.File, f.Line, f.Rule, severity, f.Message)
-		}
+		annotationType := r.getAnnotationType(f.Severity)
+		title := fmt.Sprintf("[%s] %s", strings.ToUpper(string(f.Severity)), f.Rule)
+		message := fmt.Sprintf("%s (line %d): %s", f.File, f.Line, f.Message)
+
+		fmt.Printf("::%s file=%s,line=%d,title=%s::%s\n",
+			annotationType, f.File, f.Line, title, message)
 	}
 
+	fmt.Printf("::notice::Scan complete: %d issues found\n", len(findings))
+
 	if len(findings) > 0 {
-		os.Exit(1)
+		return fmt.Errorf("scan found %d security issues", len(findings))
 	}
 
 	return nil
+}
+
+func (r *GitHubReporter) getAnnotationType(severity detectors.Severity) string {
+	switch severity {
+	case detectors.Critical, detectors.High:
+		return "error"
+	case detectors.Medium:
+		return "warning"
+	case detectors.Low:
+		return "notice"
+	default:
+		return "notice"
+	}
 }

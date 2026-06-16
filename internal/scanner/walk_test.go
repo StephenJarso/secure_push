@@ -138,10 +138,13 @@ func TestGetRelativePath(t *testing.T) {
 	}
 }
 
-func TestGetRelativePathError(t *testing.T) {
-	_, err := GetRelativePath("/tmp/secure-push-a", "/tmp/secure-push-b")
-	if err == nil {
-		t.Fatal("GetRelativePath() error = nil, want error")
+func TestGetRelativePathUnrelatedDirs(t *testing.T) {
+	rel, err := GetRelativePath("/tmp/secure-push-a", "/tmp/secure-push-b")
+	if err != nil {
+		t.Fatalf("GetRelativePath() error = %v, want nil", err)
+	}
+	if rel != "../secure-push-b" {
+		t.Errorf("GetRelativePath() = %s, want ../secure-push-b", rel)
 	}
 }
 

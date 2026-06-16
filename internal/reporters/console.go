@@ -2,7 +2,6 @@ package reporters
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"secure-push/internal/detectors"
@@ -37,7 +36,9 @@ func (r *ConsoleReporter) Report(findings []detectors.Finding) error {
 		countBySeverity(findings, detectors.Low),
 	)
 
-	os.Exit(1)
+	if len(findings) > 0 {
+		return fmt.Errorf("scan found %d security issues", len(findings))
+	}
 	return nil
 }
 

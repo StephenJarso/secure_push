@@ -3,7 +3,6 @@ package reporters
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 
 	"secure-push/internal/detectors"
 )
@@ -150,7 +149,7 @@ func (r *SARIFReporter) Report(findings []detectors.Finding) error {
 	fmt.Println(string(data))
 
 	if len(findings) > 0 {
-		os.Exit(1)
+		return fmt.Errorf("scan found %d security issues", len(findings))
 	}
 
 	return nil
