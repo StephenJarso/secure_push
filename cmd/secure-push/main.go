@@ -53,7 +53,7 @@ func printUsage() {
 	fmt.Fprintln(os.Stderr, "  -config string")
 	fmt.Fprintln(os.Stderr, "        Path to configuration file")
 	fmt.Fprintln(os.Stderr, "  -output string")
-	fmt.Fprintln(os.Stderr, "        Output format: console, json, github, sarif, csv (default \"console\")")
+	fmt.Fprintln(os.Stderr, "        Output format: console, json, github, sarif, csv, summary (default \"console\")")
 	fmt.Fprintln(os.Stderr, "  -verbose")
 	fmt.Fprintln(os.Stderr, "        Enable verbose logging")
 }
@@ -61,7 +61,7 @@ func printUsage() {
 func runScan(args []string) {
 	scanFlags := flag.NewFlagSet("scan", flag.ExitOnError)
 	configPath := scanFlags.String("config", "", "Path to configuration file")
-	outputFormat := scanFlags.String("output", "console", "Output format: console, json, github")
+	outputFormat := scanFlags.String("output", "console", "Output format: console, json, github, sarif, csv, summary")
 	verbose := scanFlags.Bool("verbose", false, "Enable verbose logging")
 	scanFlags.Parse(args)
 
@@ -91,6 +91,7 @@ func runScan(args []string) {
 		&detectors.SecretsDetector{},
 		&detectors.AuthDetector{},
 		&detectors.ConfigDetector{},
+		&detectors.ASTDetector{},
 	}
 
 	s := scanner.New(detectorList, cfg, log)
@@ -112,6 +113,8 @@ func runScan(args []string) {
 		reporter = &reporters.SARIFReporter{}
 	case "csv":
 		reporter = reporters.NewCSVReporter("findings.csv")
+	case "summary":
+		reporter = &reporters.SummaryReporter{}
 	default:
 		reporter = &reporters.ConsoleReporter{}
 	}
@@ -152,6 +155,7 @@ func runPreCommit() {
 		&detectors.SecretsDetector{},
 		&detectors.AuthDetector{},
 		&detectors.ConfigDetector{},
+		&detectors.ASTDetector{},
 	}
 
 	s := scanner.New(detectorList, cfg, log)
