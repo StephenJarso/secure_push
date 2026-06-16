@@ -118,7 +118,11 @@ func runScan(args []string) {
 
 	if err := reporter.Report(findings); err != nil {
 		log.Error("Failed to report findings: %v", err)
-		os.Exit(1)
+		os.Exit(cfg.ExitCode)
+	}
+
+	if len(findings) > 0 {
+		os.Exit(cfg.ExitCode)
 	}
 }
 

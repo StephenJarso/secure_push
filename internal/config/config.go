@@ -27,6 +27,7 @@ type Config struct {
 	MaxFileSize       int64        `yaml:"max_file_size"`
 	EnableDetectors   []string     `yaml:"enable_detectors"`
 	DisableDetectors  []string     `yaml:"disable_detectors"`
+	ExitCode          int          `yaml:"exit_code"`
 }
 
 func DefaultConfig() *Config {
@@ -39,6 +40,7 @@ func DefaultConfig() *Config {
 		MaxFileSize:       10 * 1024 * 1024,
 		EnableDetectors:   []string{},
 		DisableDetectors:  []string{},
+		ExitCode:          1,
 	}
 }
 
