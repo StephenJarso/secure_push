@@ -40,7 +40,11 @@ func (d *ASTDetector) Detect(content string, filename string) ([]Finding, error)
 			// Check for potentially dangerous function calls
 			if sel, ok := x.Fun.(*ast.SelectorExpr); ok {
 				funcName := strings.ToLower(sel.Sel.Name)
-				if isDangerousFunction(funcName) {
+				packageName := ""
+				if ident, ok := sel.X.(*ast.Ident); ok {
+					packageName = strings.ToLower(ident.Name)
+				}
+				if isDangerousFunction(packageName+"."+funcName) || isDangerousFunction(funcName) {
 					findings = append(findings, Finding{
 						Rule:     d.Name(),
 						Severity: Medium,
