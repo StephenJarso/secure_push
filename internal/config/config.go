@@ -24,6 +24,7 @@ type Config struct {
 	IgnorePaths       []string     `yaml:"ignore_paths"`
 	Allowlist         []string     `yaml:"allowlist"`
 	CustomRules       []CustomRule `yaml:"custom_rules"`
+	CustomRuleFiles   []string     `yaml:"custom_rule_files"`
 	MaxFileSize       int64        `yaml:"max_file_size"`
 	EnableDetectors   []string     `yaml:"enable_detectors"`
 	DisableDetectors  []string     `yaml:"disable_detectors"`
@@ -37,6 +38,7 @@ func DefaultConfig() *Config {
 		IgnorePaths:       []string{},
 		Allowlist:         []string{},
 		CustomRules:       []CustomRule{},
+		CustomRuleFiles:   []string{},
 		MaxFileSize:       10 * 1024 * 1024,
 		EnableDetectors:   []string{},
 		DisableDetectors:  []string{},

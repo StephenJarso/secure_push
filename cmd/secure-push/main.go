@@ -94,6 +94,15 @@ func runScan(args []string) {
 		&detectors.ASTDetector{},
 	}
 
+	// Load custom rules
+	customDetector := &detectors.CustomRuleDetector{}
+	for _, ruleFile := range cfg.CustomRuleFiles {
+		if err := customDetector.LoadRules(ruleFile); err != nil {
+			log.Error("Failed to load custom rules from %s: %v", ruleFile, err)
+		}
+	}
+	detectorList = append(detectorList, customDetector)
+
 	s := scanner.New(detectorList, cfg, log)
 
 	log.Info("Scanning %s for sensitive data...", path)
@@ -157,6 +166,15 @@ func runPreCommit() {
 		&detectors.ConfigDetector{},
 		&detectors.ASTDetector{},
 	}
+
+	// Load custom rules
+	customDetector := &detectors.CustomRuleDetector{}
+	for _, ruleFile := range cfg.CustomRuleFiles {
+		if err := customDetector.LoadRules(ruleFile); err != nil {
+			log.Error("Failed to load custom rules from %s: %v", ruleFile, err)
+		}
+	}
+	detectorList = append(detectorList, customDetector)
 
 	s := scanner.New(detectorList, cfg, log)
 
