@@ -184,7 +184,7 @@ func TestAuthDetector_Detect(t *testing.T) {
 		{
 			name:     "auth0 token",
 			filename: "config.go",
-			content:  "auth0_token = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJ.ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijkl'",
+			content:  "auth0_token = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJ0123456789.ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'",
 			wantMin:  1,
 		},
 		{
@@ -251,7 +251,7 @@ func TestAuthDetector_DetectProviderMessages(t *testing.T) {
 		},
 		{
 			name:    "auth0",
-			content: "auth0_token = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJ.ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijkl'",
+			content: "auth0_token = 'ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZAB.ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRST'",
 			want:    "Auth0 token found",
 		},
 		{
