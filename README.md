@@ -1,12 +1,14 @@
 # Secure Push 
 **Prevent secrets, insecure configs, and unsafe AI-generated code from ever reaching your Git repository.**
-**Secure Push is designed for developers and teams using AI-assisted coding tools who want security guarantees without slowing down development.**
-
-> Badges (coming soon)  
-> ![Go Version]  
+**Secure Push is designed for developers and teams using AI-assisted coding tools who want security guarantees without slowing down development.** 
+ 
 > ![Test Coverage]  
-> ![License]  
 > ![GitHub Actions Status]
+
+
+[![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?logo=go)](https://go.dev)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 
 ---
 
