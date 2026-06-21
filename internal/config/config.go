@@ -47,6 +47,19 @@ func DefaultConfig() *Config {
 	}
 }
 
+// Validate validates the configuration values
+func (c *Config) Validate() error {
+	if c.SeverityThreshold != "" && c.SeverityThreshold != "low" &&
+		c.SeverityThreshold != "medium" && c.SeverityThreshold != "high" &&
+		c.SeverityThreshold != "critical" {
+		return fmt.Errorf("invalid severity_threshold: %s", c.SeverityThreshold)
+	}
+	if c.MaxFileSize <= 0 {
+		return fmt.Errorf("max_file_size must be positive")
+	}
+	return nil
+}
+
 func Load(configPath string) (*Config, error) {
 	cfg := DefaultConfig()
 
@@ -69,6 +82,10 @@ func Load(configPath string) (*Config, error) {
 
 	if err := yaml.Unmarshal(data, cfg); err != nil {
 		return nil, fmt.Errorf("failed to parse config file: %w", err)
+	}
+
+	if err := cfg.Validate(); err != nil {
+		return nil, err
 	}
 
 	return cfg, nil
