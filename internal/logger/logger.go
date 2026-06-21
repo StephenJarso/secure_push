@@ -28,6 +28,11 @@ func New(level Level) *Logger {
 	}
 }
 
+// SetOutput changes the output destination for the logger
+func (l *Logger) SetOutput(w io.Writer) {
+	l.output = w
+}
+
 func (l *Logger) Debug(format string, args ...interface{}) {
 	if l.level <= Debug {
 		l.log("DEBUG", format, args...)
