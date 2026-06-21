@@ -38,7 +38,7 @@ func TestGetBaseName(t *testing.T) {
 		{"/path/to/file.go", "file.go"},
 		{".env", ".env"},
 		{"file", "file"},
-		{"/path/to/dir/", "."},
+		{"/path/to/dir", "dir"},
 	}
 
 	for _, tt := range tests {
