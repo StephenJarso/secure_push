@@ -3,13 +3,14 @@ package config
 import (
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
 	"gopkg.in/yaml.v3"
 
 	"secure-push/internal/detectors"
+
+	"github.com/bmatcuk/doublestar/v4"
 )
 
 // CustomRule represents a user-defined rule
@@ -107,22 +108,16 @@ func (c *Config) ShouldIgnore(path string) bool {
 	return false
 }
 
-// matchPath handles both simple patterns and glob patterns
+// matchPath handles both simple patterns and glob patterns including **
 func matchPath(pattern, targetPath string) bool {
-	// Try direct match with filepath.Match
-	matched, err := filepath.Match(pattern, targetPath)
+	// Try doublestar for ** support
+	matched, err := doublestar.Match(pattern, targetPath)
 	if err == nil && matched {
 		return true
 	}
 
 	// Try matching just the base name
-	matched, err = filepath.Match(pattern, filepath.Base(targetPath))
-	if err == nil && matched {
-		return true
-	}
-
-	// Try matching with path.Match (for ** support)
-	matched, err = path.Match(pattern, targetPath)
+	matched, err = doublestar.Match(pattern, filepath.Base(targetPath))
 	if err == nil && matched {
 		return true
 	}
