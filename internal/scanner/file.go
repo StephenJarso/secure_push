@@ -49,7 +49,17 @@ func IsBinary(data []byte) bool {
 }
 
 func GetFileExtension(path string) string {
-	return filepath.Ext(path)
+	ext := filepath.Ext(path)
+	// Handle hidden files like .env - return empty string
+	// A hidden file has no name before the extension (e.g., .env, .gitignore)
+	if ext != "" && ext[0] == '.' {
+		base := filepath.Base(path)
+		// If the base is just the extension (e.g., ".env"), it's a hidden file
+		if base == ext {
+			return ""
+		}
+	}
+	return ext
 }
 
 func IsTextFile(path string) (bool, error) {
