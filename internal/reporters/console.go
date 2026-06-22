@@ -9,32 +9,41 @@ import (
 
 type ConsoleReporter struct{}
 
-func (r *ConsoleReporter) Report(findings []detectors.Finding) error {
+// Format returns the console output as a string
+func (r *ConsoleReporter) Format(findings []detectors.Finding) string {
+	var sb strings.Builder
+
 	if len(findings) == 0 {
-		fmt.Println("✓ No sensitive data found")
-		return nil
+		sb.WriteString("✓ No sensitive data found\n")
+		return sb.String()
 	}
 
-	fmt.Printf("✗ Found %d potential security issues:\n\n", len(findings))
+	sb.WriteString(fmt.Sprintf("✗ Found %d potential security issues:\n\n", len(findings)))
 
 	for i, f := range findings {
 		severityIcon := getSeverityIcon(f.Severity)
-		fmt.Printf("%d. %s [%s] %s:%d\n", i+1, severityIcon, strings.ToUpper(string(f.Severity)), f.File, f.Line)
-		fmt.Printf("   Rule: %s\n", f.Rule)
-		fmt.Printf("   %s\n", f.Message)
+		sb.WriteString(fmt.Sprintf("%d. %s [%s] %s:%d\n", i+1, severityIcon, strings.ToUpper(string(f.Severity)), f.File, f.Line))
+		sb.WriteString(fmt.Sprintf("   Rule: %s\n", f.Rule))
+		sb.WriteString(fmt.Sprintf("   %s\n", f.Message))
 		if i < len(findings)-1 {
-			fmt.Println()
+			sb.WriteString("\n")
 		}
 	}
 
-	fmt.Println()
-	fmt.Printf("Total: %d issues found (%d critical, %d high, %d medium, %d low)\n",
+	sb.WriteString("\n")
+	sb.WriteString(fmt.Sprintf("Total: %d issues found (%d critical, %d high, %d medium, %d low)\n",
 		len(findings),
 		countBySeverity(findings, detectors.Critical),
 		countBySeverity(findings, detectors.High),
 		countBySeverity(findings, detectors.Medium),
 		countBySeverity(findings, detectors.Low),
-	)
+	))
+
+	return sb.String()
+}
+
+func (r *ConsoleReporter) Report(findings []detectors.Finding) error {
+	fmt.Print(r.Format(findings))
 
 	if len(findings) > 0 {
 		return fmt.Errorf("scan found %d security issues", len(findings))

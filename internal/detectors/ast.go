@@ -83,6 +83,9 @@ func isDangerousFunction(name string) bool {
 		"getenv", "setenv",
 		"httpget", "httppost",
 		"sqlopen", "dbquery",
+		"eval", "evalstring",
+		"compile", "mustcompile",
+		"ioutil", "osopen",
 	}
 	for _, d := range dangerous {
 		if strings.Contains(name, d) {
@@ -105,4 +108,14 @@ func isCredentialPattern(value string) bool {
 		}
 	}
 	return false
+}
+
+// IsDangerousFunction exposes the dangerous function check for testing
+func IsDangerousFunction(name string) bool {
+	return isDangerousFunction(name)
+}
+
+// IsCredentialPattern exposes the credential pattern check for testing
+func IsCredentialPattern(value string) bool {
+	return isCredentialPattern(value)
 }

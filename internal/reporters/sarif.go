@@ -82,8 +82,8 @@ type SARIFLocationProperties struct {
 	Line int `json:"line"`
 }
 
-// Report outputs findings in SARIF format
-func (r *SARIFReporter) Report(findings []detectors.Finding) error {
+// ToSARIF returns the SARIF JSON string representation of findings
+func (r *SARIFReporter) ToSARIF(findings []detectors.Finding) (string, error) {
 	rules := make(map[string]bool)
 	for _, f := range findings {
 		rules[f.Rule] = true
@@ -143,10 +143,20 @@ func (r *SARIFReporter) Report(findings []detectors.Finding) error {
 
 	data, err := json.MarshalIndent(report, "", "  ")
 	if err != nil {
-		return fmt.Errorf("failed to marshal SARIF report: %w", err)
+		return "", fmt.Errorf("failed to marshal SARIF report: %w", err)
 	}
 
-	fmt.Println(string(data))
+	return string(data), nil
+}
+
+// Report outputs findings in SARIF format
+func (r *SARIFReporter) Report(findings []detectors.Finding) error {
+	data, err := r.ToSARIF(findings)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(data)
 
 	if len(findings) > 0 {
 		return fmt.Errorf("scan found %d security issues", len(findings))

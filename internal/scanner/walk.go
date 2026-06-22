@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// WalkDir walks a directory and calls visit for each file
 func WalkDir(path string, visit func(path string, info os.FileInfo) error) error {
 	return filepath.Walk(path, func(filePath string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -24,6 +25,7 @@ func WalkDir(path string, visit func(path string, info os.FileInfo) error) error
 	})
 }
 
+// GetFileSize returns the size of a file
 func GetFileSize(path string) (int64, error) {
 	info, err := os.Stat(path)
 	if err != nil {
@@ -37,11 +39,13 @@ func GetFileInfo(path string) (os.FileInfo, error) {
 	return os.Stat(path)
 }
 
+// FileExists checks if a file exists
 func FileExists(path string) bool {
 	_, err := os.Stat(path)
 	return err == nil
 }
 
+// IsDir checks if a path is a directory
 func IsDir(path string) bool {
 	info, err := os.Stat(path)
 	if err != nil {
@@ -50,6 +54,7 @@ func IsDir(path string) bool {
 	return info.IsDir()
 }
 
+// GetRelativePath returns the relative path from base to path
 func GetRelativePath(base, path string) (string, error) {
 	rel, err := filepath.Rel(base, path)
 	if err != nil {
@@ -58,6 +63,7 @@ func GetRelativePath(base, path string) (string, error) {
 	return filepath.ToSlash(rel), nil
 }
 
+// ValidatePath validates that a path exists and is a directory
 func ValidatePath(path string) error {
 	if path == "" {
 		return fmt.Errorf("path cannot be empty")
@@ -73,4 +79,15 @@ func ValidatePath(path string) error {
 	}
 
 	return nil
+}
+
+// IsHiddenFile checks if a file is hidden (starts with .)
+func IsHiddenFile(path string) bool {
+	base := filepath.Base(path)
+	return strings.HasPrefix(base, ".") && base != "." && base != ".."
+}
+
+// GetBaseName returns the base name of a file path
+func GetBaseName(path string) string {
+	return filepath.Base(path)
 }

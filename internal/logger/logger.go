@@ -33,6 +33,31 @@ func (l *Logger) SetOutput(w io.Writer) {
 	l.output = w
 }
 
+// GetLevel returns the current log level
+func (l *Logger) GetLevel() Level {
+	return l.level
+}
+
+// IsDebugEnabled returns true if debug logging is enabled
+func (l *Logger) IsDebugEnabled() bool {
+	return l.level <= Debug
+}
+
+// IsInfoEnabled returns true if info logging is enabled
+func (l *Logger) IsInfoEnabled() bool {
+	return l.level <= Info
+}
+
+// IsWarnEnabled returns true if warn logging is enabled
+func (l *Logger) IsWarnEnabled() bool {
+	return l.level <= Warn
+}
+
+// IsErrorEnabled returns true if error logging is enabled
+func (l *Logger) IsErrorEnabled() bool {
+	return l.level <= Error
+}
+
 func (l *Logger) Debug(format string, args ...interface{}) {
 	if l.level <= Debug {
 		l.log("DEBUG", format, args...)

@@ -110,6 +110,13 @@ func (c *ScanCache) Stats() (hits, misses, entries int) {
 	return hits, misses, entries
 }
 
+// Size returns the number of cached entries
+func (c *ScanCache) Size() int {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return len(c.cache)
+}
+
 // Save persists the cache to disk
 func (c *ScanCache) Save() error {
 	if !c.enabled || c.cacheDir == "" {
