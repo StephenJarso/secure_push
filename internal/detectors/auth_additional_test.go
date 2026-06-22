@@ -91,3 +91,14 @@ func TestAuthDetector_DetectLinearToken(t *testing.T) {
 		t.Errorf("Detect() returned %d findings, want 1", len(got))
 	}
 }
+
+func TestAuthDetector_DetectIntercomToken(t *testing.T) {
+	d := &AuthDetector{}
+	got, err := d.Detect("intercom_token = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789ABCDEFGH'", "config.go")
+	if err != nil {
+		t.Fatalf("Detect() error = %v", err)
+	}
+	if len(got) != 1 {
+		t.Errorf("Detect() returned %d findings, want 1", len(got))
+	}
+}
