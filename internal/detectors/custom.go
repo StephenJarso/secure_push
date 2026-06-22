@@ -47,6 +47,18 @@ func (d *CustomRuleDetector) LoadRules(path string) error {
 	return nil
 }
 
+// AddRule adds a custom rule programmatically
+func (d *CustomRuleDetector) AddRule(rule CustomRuleConfig) error {
+	// Validate the pattern compiles
+	_, err := regexp.Compile(rule.Pattern)
+	if err != nil {
+		return fmt.Errorf("invalid regex pattern: %w", err)
+	}
+
+	d.rules = append(d.rules, rule)
+	return nil
+}
+
 // Detect applies custom rules to content
 func (d *CustomRuleDetector) Detect(content string, filename string) ([]Finding, error) {
 	var findings []Finding
@@ -103,4 +115,9 @@ func parseSeverity(severity string) Severity {
 	default:
 		return ""
 	}
+}
+
+// RuleCount returns the number of loaded custom rules
+func (d *CustomRuleDetector) RuleCount() int {
+	return len(d.rules)
 }
