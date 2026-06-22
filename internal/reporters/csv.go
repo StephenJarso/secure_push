@@ -18,6 +18,11 @@ func NewCSVReporter(file string) *CSVReporter {
 	return &CSVReporter{file: file}
 }
 
+// SetFile changes the output file for the CSV reporter
+func (r *CSVReporter) SetFile(file string) {
+	r.file = file
+}
+
 // Report writes findings to a CSV file
 func (r *CSVReporter) Report(findings []detectors.Finding) error {
 	f, err := os.Create(r.file)
