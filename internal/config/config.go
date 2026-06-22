@@ -60,6 +60,26 @@ func (c *Config) Validate() error {
 	return nil
 }
 
+// CustomRuleCount returns the number of custom rules
+func (c *Config) CustomRuleCount() int {
+	return len(c.CustomRules)
+}
+
+// IgnoreRuleCount returns the number of ignore rules
+func (c *Config) IgnoreRuleCount() int {
+	return len(c.IgnoreRules)
+}
+
+// IgnorePathCount returns the number of ignore paths
+func (c *Config) IgnorePathCount() int {
+	return len(c.IgnorePaths)
+}
+
+// AllowlistCount returns the number of allowlist entries
+func (c *Config) AllowlistCount() int {
+	return len(c.Allowlist)
+}
+
 func Load(configPath string) (*Config, error) {
 	cfg := DefaultConfig()
 
