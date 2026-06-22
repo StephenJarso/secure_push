@@ -32,6 +32,16 @@ func New(detectors []detectors.Detector, cfg *config.Config, log *logger.Logger)
 	}
 }
 
+// GetCache returns the scanner's cache for inspection
+func (s *Scanner) GetCache() *ScanCache {
+	return s.cache
+}
+
+// GetDetectorCount returns the number of configured detectors
+func (s *Scanner) GetDetectorCount() int {
+	return len(s.detectors)
+}
+
 func (s *Scanner) Scan(path string) ([]detectors.Finding, error) {
 	var findings []detectors.Finding
 	var mu sync.Mutex
